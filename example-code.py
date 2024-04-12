@@ -1,1 +1,3 @@
-print('Hello, World!')
+import sys
+
+sys.stdin.write('Hello, World!')
