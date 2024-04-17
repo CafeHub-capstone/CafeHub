@@ -1,6 +1,7 @@
 package com.cafehub.cafehub.reviewPhoto.entity;
 
 import com.cafehub.cafehub.common.entity.BaseEntity;
+import com.cafehub.cafehub.review.entity.Review;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,4 +19,11 @@ public class ReviewPhoto extends BaseEntity{
 
     @Lob
     private String reviewPhotoUrl;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id")
+    private Review review;
+
+
 }

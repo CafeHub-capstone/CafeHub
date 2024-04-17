@@ -1,10 +1,16 @@
 package com.cafehub.cafehub.cafe.entity;
 
+import com.cafehub.cafehub.bookmark.entity.Bookmark;
 import com.cafehub.cafehub.common.entity.BaseEntity;
+import com.cafehub.cafehub.menu.entity.Menu;
+import com.cafehub.cafehub.review.entity.Review;
+import com.cafehub.cafehub.theme.entity.Theme;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -38,6 +44,21 @@ public class Cafe extends BaseEntity {
     private String operationHours;
 
     private String closedDays;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "theme_id")
+    private Theme theme;
+
+    @OneToMany(mappedBy = "cafe")
+    private List<Menu> menus = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cafe")
+    private List<Bookmark> bookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cafe")
+    private List<Review> reviews = new ArrayList<>();
+
 
 
 

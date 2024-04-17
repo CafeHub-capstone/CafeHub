@@ -1,5 +1,6 @@
 package com.cafehub.cafehub.menu.entity;
 
+import com.cafehub.cafehub.cafe.entity.Cafe;
 import com.cafehub.cafehub.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,5 +25,12 @@ public class Menu extends BaseEntity{
     private String price;
 
     private Boolean best;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cafe_id")
+    private Cafe cafe;
+
+
 
 }

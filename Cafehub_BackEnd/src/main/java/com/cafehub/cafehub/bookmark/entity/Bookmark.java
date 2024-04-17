@@ -1,6 +1,8 @@
 package com.cafehub.cafehub.bookmark.entity;
 
+import com.cafehub.cafehub.cafe.entity.Cafe;
 import com.cafehub.cafehub.common.entity.BaseEntity;
+import com.cafehub.cafehub.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,5 +17,16 @@ public class Bookmark extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "bookmark_id")
     private Long id;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cafe_id")
+    private Cafe cafe;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
+
+
 
 }
