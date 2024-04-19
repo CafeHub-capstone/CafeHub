@@ -22,7 +22,7 @@ public class Menu extends BaseEntity{
 
     private String name;
 
-    private String price;
+    private Integer price;
 
     private Boolean best;
 

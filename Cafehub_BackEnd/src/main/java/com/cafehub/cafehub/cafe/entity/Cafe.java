@@ -38,7 +38,7 @@ public class Cafe extends BaseEntity {
 
     private BigDecimal rating;
 
-    private String reviewCount;
+    private Integer reviewCount;
 
     private String operationHours;
 
