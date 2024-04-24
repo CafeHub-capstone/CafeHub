@@ -8,7 +8,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
 
 
     properties:
@@ -18,9 +18,3 @@ spring:
 
 logging.level:
   org.hibernate.SQL: debug
-
-
-server:
-  servlet:
-    session:
-      timeout: 1800
