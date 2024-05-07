@@ -19,6 +19,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final MemberRepository memberRepository;
 
     @Autowired
+
     public UserDetailsServiceImpl(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
     }

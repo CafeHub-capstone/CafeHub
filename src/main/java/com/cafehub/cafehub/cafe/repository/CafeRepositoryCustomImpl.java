@@ -17,7 +17,7 @@ import static com.cafehub.cafehub.theme.entity.QTheme.theme;
 
 
 @RequiredArgsConstructor
-public class gitCafeRepositoryCustomImpl implements CafeRepositoryCustom{
+public class CafeRepositoryCustomImpl implements CafeRepositoryCustom{
 
     private static final int CAFELIST_PAGING_SIZE = 10;
 

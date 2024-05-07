@@ -20,6 +20,10 @@ public class UserDetailsImpl implements UserDetails {
         this.member = member;
     }
 
+    public Member getMember() {
+        return member;
+    }
+
     /**
      * 현재는 권한을 따로 부여하지 않았기에 빈 리스트로 반환
      * 하지만 추후에 관리자 전용 서버를 따로 만들 것이기에

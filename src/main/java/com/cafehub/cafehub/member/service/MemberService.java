@@ -64,7 +64,7 @@ public class MemberService {
 
             //두 방식 중 어떤 것이 더 좋을지 고민을 하고 추후 결정하려고 함.
 //            return ResponseDto.fail(ErrorCode.REFRESH_TOKEN_EXPIRED);
-            throw new ExpiredJwtToken(ErrorCode.REFRESH_TOKEN_EXPIRED);
+            throw  new ExpiredJwtToken(ErrorCode.REFRESH_TOKEN_EXPIRED);
         } catch (Exception e) {
 //            return ResponseDto.fail(ErrorCode.INVALID_TOKEN);
             throw new InvalidToken(ErrorCode.INVALID_TOKEN);
@@ -84,7 +84,7 @@ public class MemberService {
     }
 
     private void addTokenToResponseHeaders(HttpServletResponse response, TokenDto tokenDto) {
-        response.addHeader("access-token", tokenDto.getAccessToken());
+        response.addHeader("Authorization", "BEARER " + tokenDto.getAccessToken());
         response.addHeader("refresh-token", tokenDto.getRefreshToken());
     }
 
