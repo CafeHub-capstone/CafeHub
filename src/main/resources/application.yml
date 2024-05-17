@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:tcp://localhost/~/testcase
+    url: jdbc:h2:tcp://localhost/~/Cafehub
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -20,7 +20,7 @@ logging.level:
   org.hibernate.SQL: debug
 
 jwt:
-  secret: sPm3%L$5qF&uR#9jK@2gH!bE*wX
+  secret: aBcD3FgH1JkLmN6PqR9sTuV2xYzZ4Xw7
 
 kakao:
   restapi-key: "0ee2193a048d38e5d783af58eac76e36"
