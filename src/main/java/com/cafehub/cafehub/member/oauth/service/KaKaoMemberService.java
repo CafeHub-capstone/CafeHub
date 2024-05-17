@@ -41,7 +41,10 @@ public class KaKaoMemberService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
 
-    public void kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
+    public void kakaoLogin(HttpServletResponse response) throws JsonProcessingException {
+
+        String code = getAccessCode();
+
         String accessToken = getAccessToken(code);
         KaKaoMemberInfoDto kaKaoMemberInfo = getKakaoMemberInfo(accessToken);
 
@@ -54,6 +57,39 @@ public class KaKaoMemberService {
         refreshTokenRepository.save(new RefreshToken(kakaoUser, refreshToken));
     }
 
+    /**
+     * 인가 코드 요청
+     */
+    private String getAccessCode() throws JsonProcessingException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("client_id", kakaoKey);
+        body.add("redirect_uri", kakaoRedirectUrl);
+        body.add("response_type", "code");
+
+        HttpEntity<MultiValueMap<String, String>> kakaoCodeRequest = new HttpEntity<>(body, headers);
+
+        /**
+         * RestTemplate : 간편하게 RestAPI 호출할 수 있는 스프링 내장 클래스
+         */
+        RestTemplate rt = new RestTemplate();
+
+        ResponseEntity<String> response = rt.exchange(
+                "https://kauth.kakao.com/oauth/authorize",
+                HttpMethod.GET,
+                kakaoCodeRequest,
+                String.class
+        );
+
+        String responseBody = response.getBody();
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(responseBody);
+        String accessCode = jsonNode.get("code").asText();
+
+        return accessCode;
+    }
     /**
      * 인가 코드로 액세스 토큰 요청
      */

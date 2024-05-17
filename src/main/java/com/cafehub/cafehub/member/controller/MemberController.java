@@ -21,8 +21,8 @@ public class MemberController {
     private final KaKaoMemberService kaKaoMemberService;
 
     @GetMapping("/api/member/login")
-    public ResponseEntity<?> redirectKakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
-        kaKaoMemberService.kakaoLogin(code, response);
+    public ResponseEntity<?> redirectKakaoLogin(HttpServletResponse response) throws JsonProcessingException {
+        kaKaoMemberService.kakaoLogin(response);
         return ResponseEntity.ok().body(ResponseDto.success("Kakao OAuth Success"));
     }
 
