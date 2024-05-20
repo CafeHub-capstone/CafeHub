@@ -13,11 +13,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,9 +24,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class KaKaoMemberService {
 
     @Value("${kakao.restapi-key}")
@@ -41,9 +46,15 @@ public class KaKaoMemberService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
 
-    public void kakaoLogin(HttpServletResponse response) throws JsonProcessingException {
+    public void kakaoRedirct(HttpServletResponse response) throws IOException {
+        String encodeRedirectUrl = URLEncoder.encode(kakaoRedirectUrl, StandardCharsets.UTF_8);
+        String redirectUrl = "https://kauth.kakao.com/oauth/authorize?client_id="
+                + kakaoKey + "&redirect_uri=" + encodeRedirectUrl + "&response_type=code";
+       log.info("Redirection to: {}", redirectUrl);
+        response.sendRedirect(redirectUrl);
+    }
 
-        String code = getAccessCode();
+    public void kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
 
         String accessToken = getAccessToken(code);
         KaKaoMemberInfoDto kaKaoMemberInfo = getKakaoMemberInfo(accessToken);
@@ -58,95 +69,49 @@ public class KaKaoMemberService {
     }
 
     /**
-     * 인가 코드 요청
-     */
-    private String getAccessCode() throws JsonProcessingException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("client_id", kakaoKey);
-        body.add("redirect_uri", kakaoRedirectUrl);
-        body.add("response_type", "code");
-
-        HttpEntity<MultiValueMap<String, String>> kakaoCodeRequest = new HttpEntity<>(body, headers);
-
-        /**
-         * RestTemplate : 간편하게 RestAPI 호출할 수 있는 스프링 내장 클래스
-         */
-        RestTemplate rt = new RestTemplate();
-
-        ResponseEntity<String> response = rt.exchange(
-                "https://kauth.kakao.com/oauth/authorize",
-                HttpMethod.GET,
-                kakaoCodeRequest,
-                String.class
-        );
-
-        String responseBody = response.getBody();
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.readTree(responseBody);
-        String accessCode = jsonNode.get("code").asText();
-
-        return accessCode;
-    }
-    /**
      * 인가 코드로 액세스 토큰 요청
      */
     private String getAccessToken(String code) throws JsonProcessingException {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://kauth.kakao.com")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .build();
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "authorization_code");
-        body.add("client_id", kakaoKey);
-        body.add("redirect_uri", kakaoRedirectUrl);
-        body.add("code", code);
+        String response = webClient.post()
+                .uri("/oauth/token")
+                .body(BodyInserters.fromFormData("grant_type", "authorization_code")
+                        .with("client_id", kakaoKey)
+                        .with("redirect_uri", kakaoRedirectUrl)
+                        .with("code", code))
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
 
-        HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(body, headers);
-
-        /**
-         * RestTemplate : 간편하게 RestAPI 호출할 수 있는 스프링 내장 클래스
-         */
-        RestTemplate rt = new RestTemplate();
-
-        ResponseEntity<String> response = rt.exchange(
-                "https://kauth.kakao.com/oauth/token",
-                HttpMethod.POST,
-                kakaoTokenRequest,
-                String.class
-        );
-
-        String responseBody = response.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.readTree(responseBody);
-        String accessToken = jsonNode.get("access-token").asText();
-
-        return accessToken;
+        JsonNode jsonNode = objectMapper.readTree(response);
+        return jsonNode.get("access_token").asText();
     }
 
     /**
      * 토큰으로 카카오 API 호출
      */
     private KaKaoMemberInfoDto getKakaoMemberInfo(String accessToken) throws JsonProcessingException {
-        HttpHeaders headers = new HttpHeaders();
 
-        headers.add("Authorization", "Bearer " + accessToken);
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://kapi.kakao.com")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .build();
 
-        HttpEntity<MultiValueMap<String, String>> kakaoMemberInfoRequest = new HttpEntity<>(headers);
-        RestTemplate rt = new RestTemplate();
-        ResponseEntity<String> response = rt.exchange(
-                "https://kapi.kakao.com/v2/user/me",
-                HttpMethod.POST,
-                kakaoMemberInfoRequest,
-                String.class
-        );
+        String response = webClient.post()
+                .uri("/v2/user/me")
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
 
-        String responseBody = response.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.readTree(responseBody);
+        JsonNode jsonNode = objectMapper.readTree(response);
         String nickname = jsonNode.get("properties").get("nickname").asText();
         String email = jsonNode.get("kakao_account").get("email").asText();
 
@@ -183,7 +148,7 @@ public class KaKaoMemberService {
      */
     private String kakaoMembersAuthorizationInput(Member kakaoUser, HttpServletResponse response) {
         TokenDto tokenDto = jwtProvider.generateTokenDto(kakaoUser);
-        response.addHeader("Authorization", "BEARER " + tokenDto.getAccessToken());
+        response.addHeader("Authorization", "Bearer " + tokenDto.getAccessToken());
         response.addHeader("refresh-token", tokenDto.getRefreshToken());
         return tokenDto.getRefreshToken();
     }

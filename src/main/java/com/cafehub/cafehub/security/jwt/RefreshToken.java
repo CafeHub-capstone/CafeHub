@@ -24,7 +24,7 @@ public class RefreshToken extends Timestamped {
         this.token = token;
     }
 
-    public void updateToken(String refreshToken) {
+    public void updateToken(String token) {
         this.token = token;
     }
 }

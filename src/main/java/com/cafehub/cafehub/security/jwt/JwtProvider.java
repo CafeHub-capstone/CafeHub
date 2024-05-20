@@ -2,6 +2,7 @@ package com.cafehub.cafehub.security.jwt;
 
 import com.cafehub.cafehub.member.entity.Member;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
@@ -14,7 +15,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 
 
@@ -31,14 +34,15 @@ public class JwtProvider {
 
     @Value("${jwt.secret}")
     private String JWT_SECRET;
-    private Key key;
+    private SecretKey key;
 
     /**
      * 키 초기화
      */
     @PostConstruct
     protected void keyInit() {
-        key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes());
+        byte[] decodedKey = Base64.getDecoder().decode(JWT_SECRET.getBytes());
+        key = Keys.hmacShaKeyFor(decodedKey);
     }
 
     /**
@@ -49,18 +53,18 @@ public class JwtProvider {
 
         int ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30; //30분
         String accessToken = Jwts.builder()
-                .setSubject(member.getEmail())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(now + ACCESS_TOKEN_EXPIRE_TIME))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .subject(member.getEmail())
+                .issuedAt(new Date())
+                .expiration(new Date(now + ACCESS_TOKEN_EXPIRE_TIME))
+                .signWith(key)
                 .compact();
 
         int REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 14; //2주일
         String refreshToken = Jwts.builder()
-                .setSubject(member.getEmail())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .subject(member.getEmail())
+                .issuedAt(new Date())
+                .expiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
+                .signWith(key)
                 .compact();
 
         return new TokenDto(accessToken, refreshToken);
@@ -70,22 +74,13 @@ public class JwtProvider {
      * 토큰의 유효성 검사
      */
     public boolean isValidToken(String token) {
-        if (token == null) {
-            log.error("JWT token is null");
-            return false;
-        }
-
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJwt(token);
+            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
-        } catch (ExpiredJwtException e) {
-          log.error("JWT token is expired");
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             log.error("JWT claims string is empty");
-        } catch (JwtException e) {
-            log.error("JWT token parsing error: {}", e.getMessage());
         }
         return false;
     }
@@ -94,7 +89,7 @@ public class JwtProvider {
      * 사용자의 인증 정보 find
      */
     public Authentication getAuthentication(String token) {
-        String email = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJwt(token).getBody().getSubject();
+        String email = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload().getSubject();
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }

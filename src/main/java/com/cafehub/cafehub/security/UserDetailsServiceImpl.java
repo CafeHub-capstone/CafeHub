@@ -19,16 +19,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final MemberRepository memberRepository;
 
     @Autowired
-
     public UserDetailsServiceImpl(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Member member = memberRepository.findByEmail(email)
+        return memberRepository.findByEmail(email)
+                .map(UserDetailsImpl::new)
                 .orElseThrow(() -> new UsernameNotFoundException("Can't find " + email));
-
-        return new UserDetailsImpl(member);
     }
+
 }

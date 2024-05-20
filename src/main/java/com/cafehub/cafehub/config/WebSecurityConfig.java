@@ -32,15 +32,6 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
     private final JwtProvider jwtProvider;
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
 
-    private static final String[] PERMIT_URL_ARRAY = {
-            "/login",
-            "/cafeList/**",
-            "/cafe/{cafeId}",
-            "/cafe/{cafeId}/menu",
-            "/cafe/{cafeId}/reviews/{currentPage}",
-            "/reviews/{reviewId}/comments/{currentPage}"
-    };
-
     /**
      * 개발 및 테스트 단계에서의 편의를 위해 사용
      * 실제 운영 환경에서는 사용안함
@@ -67,9 +58,8 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
 
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/**").authenticated()
-                        .requestMatchers(PERMIT_URL_ARRAY).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .anyRequest().authenticated());
+                        .anyRequest().permitAll());
 
         return http.build();
     }

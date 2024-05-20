@@ -1,6 +1,5 @@
 package com.cafehub.cafehub.security.jwt;
 
-import com.querydsl.core.types.dsl.StringPath;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
             } else {
                 String accessToken = getAccessTokenFromRequest(request);
-                if (jwtProvider.isValidToken(accessToken)) {
+                if (StringUtils.hasText(accessToken) && jwtProvider.isValidToken(accessToken)) {
                     Authentication auth = jwtProvider.getAuthentication(accessToken);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 } else {
@@ -37,9 +37,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         } catch (ExpiredJwtException e) {
             request.setAttribute("EXPIRED_JWT", "EXPIRED_JWT");
-            log.error("INVALID_JWT or EXPIRED_JWT", e);
+            log.error("Could not set user authentication in security context", e);
         } catch (NullPointerException e) {
-            log.error("INVALID_JWT or EXPIRED_JWT", e);
+            log.error("Could not set user authentication in security context", e);
         }
         filterChain.doFilter(request, response);
     }
@@ -47,7 +47,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private String getAccessTokenFromRequest(HttpServletRequest request) {
         String accessToken = request.getHeader("Authorization");
         try {
-            return accessToken.substring("BEARER ".length());
+            return accessToken.substring("Bearer ".length());
         } catch (NullPointerException e) {
             return null;
         }
