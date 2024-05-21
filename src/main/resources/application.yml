@@ -25,3 +25,8 @@ jwt:
 kakao:
   restapi-key: 0ee2193a048d38e5d783af58eac76e36
   redirect-url: http://localhost:8080/api/oauth
+
+cloud:
+  aws:
+    s3:
+      bucket: idontknow
