@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @Slf4j
 public class MemberController {
@@ -23,11 +23,10 @@ public class MemberController {
     private final KaKaoMemberService kaKaoMemberService;
 
     @GetMapping("/api/member/login")
-    public void kakaoLogin(HttpServletResponse response) throws IOException {
-        kaKaoMemberService.kakaoRedirct(response);
+    public String kakaoLogin(HttpServletResponse response) throws IOException {
+        return kaKaoMemberService.kakaoRedirct(response);
     }
 
-    @ResponseBody
     @GetMapping("/api/oauth")
     public ResponseEntity<?> redirectKakaoLogin(@RequestParam("code") String code, HttpServletResponse response) throws JsonProcessingException {
         log.info("Received OAuth code: {}", code);
@@ -35,13 +34,11 @@ public class MemberController {
         return ResponseEntity.ok().body(ResponseDto.success("Kakao OAuth Success"));
     }
 
-    @ResponseBody
     @PostMapping("/api/auth/reissue")
     public ResponseEntity<?> reissueJwt(HttpServletRequest request, HttpServletResponse response) {
         return ResponseEntity.ok().body(memberService.reissueJwt(request, response));
     }
 
-    @ResponseBody
     @PostMapping("/api/auth/member/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok().body(memberService.logout());
