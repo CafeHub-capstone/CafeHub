@@ -8,6 +8,6 @@ public interface CafeRepositoryCustom {
 
     Slice<Cafe> findAllFetch(CafeListRequest cafeListRequest);
 
-    Slice<Cafe> findByThemeFetchSortedByType(CafeListRequest cafeListRequest);
+    Slice<Cafe> findAllByThemeFetch(CafeListRequest cafeListRequest);
 
 }

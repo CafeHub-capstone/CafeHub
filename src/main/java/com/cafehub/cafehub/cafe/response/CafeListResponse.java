@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CafeListResponse {
 
+
     private Boolean success;
 
     private List<CafeResponseForCafeList> cafeList;
