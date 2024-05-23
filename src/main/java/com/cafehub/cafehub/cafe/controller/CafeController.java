@@ -1,7 +1,9 @@
 package com.cafehub.cafehub.cafe.controller;
 
 
+import com.cafehub.cafehub.cafe.request.CafeInfoRequest;
 import com.cafehub.cafehub.cafe.request.CafeListRequest;
+import com.cafehub.cafehub.cafe.response.CafeInfoResponse;
 import com.cafehub.cafehub.cafe.response.CafeListResponse;
 import com.cafehub.cafehub.cafe.service.CafeService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,17 @@ public class CafeController {
 
         return cafeService.getCafeListResponseSortedByType(cafeListRequest);
     }
+
+
+
+    @GetMapping("/api/cafe/{cafeId}")
+    public CafeInfoResponse cafeInfo(@PathVariable("cafeId") Long cafeId){
+
+        CafeInfoRequest cafeInfoRequest = new CafeInfoRequest(cafeId);
+
+        return cafeService.getCafeInfo(cafeInfoRequest);
+    }
+
 
 
 

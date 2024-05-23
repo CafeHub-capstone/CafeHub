@@ -12,10 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Repository
+
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long>{
 
 
+    boolean existsByCafeIdAndMemberId(Long cafeId, Long memberId);  
+  
     @Query("select new com.cafehub.cafehub.bookmark.response.CafeForMarkedResponseDTO" +
             "(b.cafe.id, b.cafe.cafePhotoUrl, b.cafe.name, b.cafe.rating, b.cafe.theme.name, b.cafe.reviewCount) " +
             "from Bookmark b " +
@@ -27,7 +29,4 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long>{
     @Query("delete from Bookmark b where b.member.id = :memberId and b.cafe.id = :cafeId")
     void deleteByBookmarkIdAndMemberId(@Param("cafeId") Long cafeId, @Param("memberId") Long memberId);
 
-    //boolean existsByMemberId(long l);
-
-    //boolean existsByMemberIdAndCafeId(long l, Long cafeId);
 }
