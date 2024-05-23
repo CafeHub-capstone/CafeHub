@@ -11,14 +11,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CafeListRequest {
 
-    // Date, Dessert, Meeting, Study, All
     private String theme;
 
-    // name : 이름순 (가나다)
-    // rating : 별점 높은 순
-    // reviewNum : 리뷰 개수 많은 순
     private String sortedByType;
 
-    // 0 | 1 | 2 ..
     private Integer currentPage;
 }
