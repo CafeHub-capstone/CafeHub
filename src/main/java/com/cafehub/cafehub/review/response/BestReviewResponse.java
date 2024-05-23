@@ -1,26 +1,36 @@
 package com.cafehub.cafehub.review.response;
 
+import com.cafehub.cafehub.reviewPhoto.response.PhotoUrlResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class BestReviewResponse {
-    // 임시 테스트
-//    private String author;
+
+    private Long reviewId;
+
+    private String author;
 
     private Integer reviewRating;
 
-    private String content;
+    private String reviewContent;
 
-//    private String reviewDate;
+    private LocalDateTime reviewDate;
 
-//    private Integer likeCnt;
+    private Integer likeCnt;
 
-//    private String photoUrl;
+    private Integer commentCnt;
+
+    private Boolean reviewChecked;
+
+    private List<PhotoUrlResponse> photoUrls;
 
 }

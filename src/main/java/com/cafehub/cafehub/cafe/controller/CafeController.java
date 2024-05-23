@@ -33,7 +33,8 @@ public class CafeController {
     }
 
 
-    @GetMapping("/cafe/{cafeId}")
+
+    @GetMapping("/api/cafe/{cafeId}")
     public CafeInfoResponse cafeInfo(@PathVariable("cafeId") Long cafeId){
 
         CafeInfoRequest cafeInfoRequest = new CafeInfoRequest(cafeId);
