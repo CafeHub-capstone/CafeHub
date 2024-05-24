@@ -70,11 +70,14 @@ public class Cafe extends BaseEntity {
 //    @OneToMany(mappedBy = "cafe")
 //    private List<Bookmark> bookmarks = new ArrayList<>();
 //
-//    @OneToMany(mappedBy = "cafe")
-//    private List<Review> reviews = new ArrayList<>();
+    @OneToMany(mappedBy = "cafe")
+    private List<Review> reviews = new ArrayList<>();
 
+    public void updateRating(BigDecimal rating) {
+        this.rating = rating;
+    }
 
-
-
-
+    public void updateReviewCount(Integer reviewCount) {
+        this.reviewCount = reviewCount;
+    }
 }

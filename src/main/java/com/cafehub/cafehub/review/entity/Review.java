@@ -29,7 +29,9 @@ public class Review extends BaseEntity{
     @Lob
     private String content;
 
-    private Integer likeReviewCount;
+
+    private Integer likeCount;
+
 
     private Integer commentCount;
 
@@ -57,8 +59,12 @@ public class Review extends BaseEntity{
      * 두 엔티티 간의 일관성을 계속 유지해야 함으로써 문제가 생길 수 있다.
      * 또한 한 트랜잭션 안에서 영속성 컨텍스트를 이용할 경우 데이터 적합성이 불일치 할 수 있다.
      */
-    @OneToMany(mappedBy = "review")
-    private List<ReviewPhoto> reviewPhotos = new ArrayList<>();
+
+//     @OneToMany(mappedBy = "review" ,cascade = CascadeType.ALL)
+//     private List<ReviewPhoto> reviewPhotos = new ArrayList<>();
+//
+
+ 
 
 //    @OneToMany(mappedBy = "review")
 //    private List<Comment> comments = new ArrayList<>();
@@ -66,7 +72,9 @@ public class Review extends BaseEntity{
 //    @OneToMany(mappedBy = "review")
 //    private List<LikeReview> likeReviews = new ArrayList<>();
 
-
-
-
+    // updateReview 부분 최적화.
+    public void updateContent(Integer rating, String content) {
+        this.rating = rating;
+        this.content = content;
+    }
 }
