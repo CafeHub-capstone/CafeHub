@@ -22,7 +22,7 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long>{
             "(b.cafe.id, b.cafe.cafePhotoUrl, b.cafe.name, b.cafe.rating, b.cafe.theme.name, b.cafe.reviewCount) " +
             "from Bookmark b " +
             "where b.member.id = :memberId")
-    List<CafeForMarkedResponseDTO> findCafesByBookmarkIdAndMemberId(@Param("memberId") Long memberId);
+    List<CafeForMarkedResponseDTO> findAllByMemberId(@Param("memberId") Long memberId);
 
     @Transactional
     @Modifying(clearAutomatically = true)

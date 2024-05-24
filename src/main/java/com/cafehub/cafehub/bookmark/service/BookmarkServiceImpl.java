@@ -29,7 +29,7 @@ public class BookmarkServiceImpl implements BookmarkService{
     public BookmarkListResponseDto getBookmarkList(){
 
         Member member = memberRepository.getOne(2l);
-        return new BookmarkListResponseDto(true, bookmarkRepository.findCafesByBookmarkIdAndMemberId(member.getId()), "OK");
+        return new BookmarkListResponseDto(true, bookmarkRepository.findAllByMemberId(member.getId()), "OK");
     }
 
     //북마크 저장
