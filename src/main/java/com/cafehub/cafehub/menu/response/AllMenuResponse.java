@@ -1,4 +1,4 @@
-package com.cafehub.cafehub.cafe.response;
+package com.cafehub.cafehub.menu.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,16 +11,12 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CafeListResponse {
-
+public class AllMenuResponse {
 
     private Boolean success;
 
-    private List<CafeResponseForCafeList> cafeList;
-
-    private Boolean isLast;
-
-    private Integer currentPage;
+    private List<MenuResponse> menuList;
 
     private String errorMessage;
 }
+

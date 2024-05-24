@@ -19,9 +19,10 @@ public class CafeResponseForCafeList {
 
     private String cafeName;
 
-    private BigDecimal cafeRating;
-
     private String cafeTheme;
+
+    // cafeRating과 cafeReviewNum은 리뷰의 변경에 영향을 받음
+    private BigDecimal cafeRating;
 
     private Integer cafeReviewNum;
 }

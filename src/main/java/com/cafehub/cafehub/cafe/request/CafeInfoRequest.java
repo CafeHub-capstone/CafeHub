@@ -9,11 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CafeListRequest {
+public class CafeInfoRequest {
 
-    private String theme;
-
-    private String sortedByType;
-
-    private Integer currentPage;
+    private Long cafeId;
 }
