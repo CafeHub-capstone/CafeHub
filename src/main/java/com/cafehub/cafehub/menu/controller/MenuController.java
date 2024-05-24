@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+
+
 @Slf4j
 @CrossOrigin
 @RestController
@@ -19,7 +21,7 @@ public class MenuController {
     private final MenuService menuService;
 
 
-    @GetMapping("/cafe/{cafeId}/menu")
+    @GetMapping("/api/cafe/{cafeId}/menu")
     public AllMenuResponse getAllMenu(@PathVariable("cafeId") Long cafeId){
 
         AllMenuRequest allMenuRequest = new AllMenuRequest(cafeId);

@@ -20,17 +20,20 @@ public class MenuServiceImpl implements MenuService{
 
     private final MenuRepository menuRepository;
 
+    // 전체 메뉴를 가져오기 , DB와 소통 횟수 : 1번
     @Override
     public AllMenuResponse getAllMenu(AllMenuRequest allMenuRequest){
 
         List<Menu> menuList = menuRepository.findAllByCafeId(allMenuRequest.getCafeId());
-        List<MenuResponse> menuResponseList = new ArrayList<>();
 
-        for(Menu menu : menuList){
-
-            MenuResponse menuResponse = new MenuResponse(menu.getCategory(),menu.getName(),menu.getPrice());
-            menuResponseList.add(menuResponse);
-        }
+        List<MenuResponse> menuResponseList = menuList.stream()
+                .map(menu -> new MenuResponse(
+                        menu.getId(),
+                        menu.getCategory().name(),
+                        menu.getName(),
+                        menu.getPrice()
+                ))
+                .toList();
 
         return new AllMenuResponse(true, menuResponseList,"ok");
     }

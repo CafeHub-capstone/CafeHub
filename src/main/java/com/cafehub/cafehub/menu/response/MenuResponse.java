@@ -12,9 +12,11 @@ import lombok.Setter;
 @NoArgsConstructor
 public class MenuResponse {
 
-    private Category category;
+    private Long menuId;
 
-    private String name;
+    private String category;
+
+    private String menuName;
 
     private Integer price;
 }
