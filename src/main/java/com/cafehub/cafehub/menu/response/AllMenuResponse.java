@@ -1,22 +1,22 @@
 package com.cafehub.cafehub.menu.response;
 
-import com.cafehub.cafehub.menu.entity.Category;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MenuResponse {
+public class AllMenuResponse {
 
-    private Long menuId;
+    private Boolean success;
 
-    private String category;
+    private List<MenuResponse> menuList;
 
-    private String menuName;
-
-    private Integer price;
+    private String errorMessage;
 }
+
