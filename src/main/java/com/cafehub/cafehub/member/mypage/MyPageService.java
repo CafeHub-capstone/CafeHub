@@ -37,8 +37,6 @@ public class MyPageService {
     private final AmazonS3Client s3Client;
     private final JwtProvider jwtProvider;
     private final MemberRepository memberRepository;
-    private final ReviewRepository reviewRepository;
-    private final CommentRepository commentRepository;
     private final BookmarkRepository bookmarkRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 

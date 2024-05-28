@@ -22,7 +22,11 @@ public enum ErrorCode {
     // 프로필 변경 실패
     FAILED_CHANGE_PROFILE("FAILED_CHANGE_PROFILE", "Failed Change Profile"),
     // 용량 초과
-    FILE_SIZE_EXCEED("FILE_SIZE_EXCEED", "File Size Exceed. Limit is 1MB");
+    FILE_SIZE_EXCEED("FILE_SIZE_EXCEED", "File Size Exceed. Limit is 1MB"),
+    //요청 위치에 리소스 없음
+    NULL_ID("NULL_ID", "Id Doesn't Exist"),
+    //유저의 권한 없는 요청
+    NOT_ALLOWED("NOT_ALLOWED", "Only The Writer Is Allowed");
 
     private final String code;
     private final String message;
