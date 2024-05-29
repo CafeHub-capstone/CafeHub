@@ -3,8 +3,10 @@ package com.cafehub.cafehub.member.mypage;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.cafehub.cafehub.comment.entity.Comment;
 import com.cafehub.cafehub.common.ErrorCode;
 import com.cafehub.cafehub.common.dto.ResponseDto;
+import com.cafehub.cafehub.likeReview.repository.LikeReviewRepository;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.member.mypage.dto.ProfileRequestDto;
 import com.cafehub.cafehub.member.mypage.dto.ProfileResponseDto;
@@ -44,6 +46,7 @@ public class MyPageService {
     private final JwtProvider jwtProvider;
     private final ReviewRepository reviewRepository;
     private final ReviewPhotoRepository reviewPhotoRepository;
+    private final LikeReviewRepository likeReviewRepository;
     private final CommentsRepository commentsRepository;
 
     public ResponseDto<?> getMyProfile(HttpServletRequest request) {
@@ -59,12 +62,12 @@ public class MyPageService {
 
     public ResponseDto<?> getMyReviews(Pageable pageable, HttpServletRequest request) {
         Member member = getMemberFromJwt(request);
-        Page<Review> allMyReviews = reviewRepository.findAllByMemberId(member.getId());
+        Page<Review> allMyReviews = reviewRepository.findAllByMemberId(member.getId(), pageable);
         List<Review> reviews = allMyReviews.getContent();
-        List<ReviewResponseDto> MyReviewList = makeReviewResponse(reviews);
+        List<ReviewResponseDto> myReviewList = makeReviewResponse(reviews);
 
         ProfileReviewsResponseDto profileReviewsResponseDto = ProfileReviewsResponseDto.builder()
-                .reviewList(MyReviewList)
+                .reviewList(myReviewList)
                 .isLast(allMyReviews.isLast())
                 .currentPage(allMyReviews.getNumber())
                 .build();
@@ -74,6 +77,15 @@ public class MyPageService {
 
     public ResponseDto<?> getMyComments(HttpServletRequest request) {
         Member member = getMemberFromJwt(request);
+        Page<Comment> allMyComments = commentsRepository.findAllByMemberId(member.getId());
+        List<Comment> comments = allMyComments.getContent();
+        List<CommentResponseDto> myCommentList = makeCommentResponse(comments);
+    }
+
+    private List<CommentResponseDto> makeCommentResponse(List<Comment> comments) {
+        List<CommentResponseDto> responseDtoList = new ArrayList<>();
+
+
     }
 
     public ResponseDto<?> changeMyProfile(HttpServletRequest request, ProfileRequestDto requestDto) {
@@ -125,7 +137,7 @@ public class MyPageService {
                     .reviewContent(review.getContent())
                     .reviewCreateDate(review.getCreatedDate())
                     .likeCnt(review.getLikeCount())
-                    .likeChecked()
+                    .likeChecked(checkLike(review.getMember(), review))
                     .commentCnt(review.getCommentCount())
                     .photoUrls(reviewPhotosMap.getOrDefault(review.getId(), Collections.emptyList()).stream()
                             .map(reviewPhoto -> new PhotoUrlResponse(reviewPhoto.getReviewPhotoUrl()))
@@ -135,6 +147,10 @@ public class MyPageService {
             responseDtoList.add(responseDto);
         }
         return responseDtoList;
+    }
+
+    private Boolean checkLike(Member member, Review review) {
+        return likeReviewRepository.existsByMemberAndReview(member, review);
     }
 
 //    public ResponseDto<?> deleteMember(HttpServletRequest request) {
