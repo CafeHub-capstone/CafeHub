@@ -32,8 +32,8 @@ public class MyPageController {
     }
 
     @GetMapping("/api/auth/mypage/comments")
-    public ResponseEntity<?> geyProfileComments(HttpServletRequest request) {
-        return ResponseEntity.ok().body(myPageService.getMyComments(request));
+    public ResponseEntity<?> geyProfileComments(@PageableDefault(page = 0, size = 3, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable, HttpServletRequest request) {
+        return ResponseEntity.ok().body(myPageService.getMyComments(pageable, request));
     }
 
     @PostMapping("/api/auth/mypage")

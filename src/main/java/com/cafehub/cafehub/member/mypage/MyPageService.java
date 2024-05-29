@@ -8,6 +8,7 @@ import com.cafehub.cafehub.common.ErrorCode;
 import com.cafehub.cafehub.common.dto.ResponseDto;
 import com.cafehub.cafehub.likeReview.repository.LikeReviewRepository;
 import com.cafehub.cafehub.member.entity.Member;
+import com.cafehub.cafehub.member.mypage.dto.ProfileCommentsResponseDto;
 import com.cafehub.cafehub.member.mypage.dto.ProfileRequestDto;
 import com.cafehub.cafehub.member.mypage.dto.ProfileResponseDto;
 import com.cafehub.cafehub.member.mypage.dto.ProfileReviewsResponseDto;
@@ -75,17 +76,22 @@ public class MyPageService {
         return ResponseDto.success(profileReviewsResponseDto);
     }
 
-    public ResponseDto<?> getMyComments(HttpServletRequest request) {
+    public ResponseDto<?> getMyComments(Pageable pageable, HttpServletRequest request) {
         Member member = getMemberFromJwt(request);
-        Page<Comment> allMyComments = commentsRepository.findAllByMemberId(member.getId());
+        Page<Comment> allMyComments = commentsRepository.findAllByMemberId(member.getId(), pageable);
         List<Comment> comments = allMyComments.getContent();
         List<CommentResponseDto> myCommentList = makeCommentResponse(comments);
-    }
 
-    private List<CommentResponseDto> makeCommentResponse(List<Comment> comments) {
-        List<CommentResponseDto> responseDtoList = new ArrayList<>();
+        /**
+         * 해당 부분은 댓글 도메인과 병합시 변경 될 예정
+         */
+        ProfileCommentsResponseDto profileCommentsResponseDto = ProfileCommentsResponseDto.builder()
+                .commentList(myCommentList)
+                .isLast(allMyComments.isLast())
+                .currentPage(allMyComments.getNumber())
+                .build();
 
-
+        return ResponseDto.success(profileCommentsResponseDto);
     }
 
     public ResponseDto<?> changeMyProfile(HttpServletRequest request, ProfileRequestDto requestDto) {
@@ -151,6 +157,22 @@ public class MyPageService {
 
     private Boolean checkLike(Member member, Review review) {
         return likeReviewRepository.existsByMemberAndReview(member, review);
+    }
+
+    private List<CommentResponseDto> makeCommentResponse(List<Comment> comments) {
+        List<CommentResponseDto> responseDtoList = new ArrayList<>();
+
+        for (Comment comment : comments) {
+            CommentResponseDto responseDto = CommentResponseDto.builder()
+                    .commentId(comment.getId())
+                    .author(comment.getMember().getNickname())
+                    .commentContent(comment.getContent())
+                    .commentCreateDate(comment.getCreatedDate())
+                    .commentManagement(true)
+                    .build();
+            responseDtoList.add(responseDto);
+        }
+        return responseDtoList;
     }
 
 //    public ResponseDto<?> deleteMember(HttpServletRequest request) {
