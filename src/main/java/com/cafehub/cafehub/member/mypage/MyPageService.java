@@ -8,8 +8,11 @@ import com.cafehub.cafehub.common.dto.ResponseDto;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.member.mypage.dto.ProfileRequestDto;
 import com.cafehub.cafehub.member.mypage.dto.ProfileResponseDto;
+import com.cafehub.cafehub.member.mypage.dto.ProfileReviewsResponseDto;
 import com.cafehub.cafehub.member.mypage.exception.FailedChangeProfile;
 import com.cafehub.cafehub.member.repository.MemberRepository;
+import com.cafehub.cafehub.review.entity.Review;
+import com.cafehub.cafehub.reviewPhoto.entity.ReviewPhoto;
 import com.cafehub.cafehub.security.UserDetailsImpl;
 import com.cafehub.cafehub.security.jwt.JwtProvider;
 import com.cafehub.cafehub.security.jwt.RefreshTokenRepository;
@@ -17,6 +20,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +30,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,11 +42,11 @@ public class MyPageService {
     private String bucket;
     private final AmazonS3Client s3Client;
     private final JwtProvider jwtProvider;
-    private final MemberRepository memberRepository;
-    private final BookmarkRepository bookmarkRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final ReviewRepository reviewRepository;
+    private final ReviewPhotoRepository reviewPhotoRepository;
+    private final CommentsRepository commentsRepository;
 
-    public ProfileResponseDto getMyProfile(HttpServletRequest request) {
+    public ResponseDto<?> getMyProfile(HttpServletRequest request) {
         Member member = getMemberFromJwt(request);
         ProfileResponseDto profileResponseDto = ProfileResponseDto.builder()
                 .nickname(member.getNickname())
@@ -48,7 +54,26 @@ public class MyPageService {
                 .profileImg(member.getUserPhotoUrl())
                 .build();
 
-        return profileResponseDto;
+        return ResponseDto.success(profileResponseDto);
+    }
+
+    public ResponseDto<?> getMyReviews(Pageable pageable, HttpServletRequest request) {
+        Member member = getMemberFromJwt(request);
+        Page<Review> allMyReviews = reviewRepository.findAllByMemberId(member.getId());
+        List<Review> reviews = allMyReviews.getContent();
+        List<ReviewResponseDto> MyReviewList = makeReviewResponse(reviews);
+
+        ProfileReviewsResponseDto profileReviewsResponseDto = ProfileReviewsResponseDto.builder()
+                .reviewList(MyReviewList)
+                .isLast(allMyReviews.isLast())
+                .currentPage(allMyReviews.getNumber())
+                .build();
+
+        return ResponseDto.success(profileReviewsResponseDto);
+    }
+
+    public ResponseDto<?> getMyComments(HttpServletRequest request) {
+        Member member = getMemberFromJwt(request);
     }
 
     public ResponseDto<?> changeMyProfile(HttpServletRequest request, ProfileRequestDto requestDto) {
@@ -68,6 +93,48 @@ public class MyPageService {
             log.error(e.getMessage());
             throw new FailedChangeProfile(ErrorCode.FAILED_CHANGE_PROFILE);
         }
+    }
+
+    private List<ReviewResponseDto> makeReviewResponse(List<Review> reviews) {
+        List<ReviewResponseDto> responseDtoList = new ArrayList<>();
+
+        /**
+         * 리뷰 ID 목록 추출
+         */
+        List<Long> reviewIds = reviews.stream().map(Review::getId).toList();
+
+        /**
+         * 리뷰 ID 목록을 통해서 ReviewPhoto 목록 추출
+         */
+        List<ReviewPhoto> reviewPhotos = reviewPhotoRepository.findAllByReviewIdIn(reviewIds);
+
+        /**
+         * KEY = 리뷰 ID, VALUE = ReviewPhoto 맵 생성
+         */
+        Map<Long, List<ReviewPhoto>> reviewPhotosMap = reviewPhotos.stream()
+                .collect(Collectors.groupingBy(reviewPhoto -> reviewPhoto.getReview().getId()));
+
+        /**
+         * 리뷰 리스트 생성 및 반환
+         */
+        for (Review review : reviews) {
+            ReviewResponseDto responseDto = ReviewResponseDto.builder()
+                    .reviewId(review.getId())
+                    .author(review.getMember().getNickname())
+                    .reviewRating(review.getRating())
+                    .reviewContent(review.getContent())
+                    .reviewCreateDate(review.getCreatedDate())
+                    .likeCnt(review.getLikeCount())
+                    .likeChecked()
+                    .commentCnt(review.getCommentCount())
+                    .photoUrls(reviewPhotosMap.getOrDefault(review.getId(), Collections.emptyList()).stream()
+                            .map(reviewPhoto -> new PhotoUrlResponse(reviewPhoto.getReviewPhotoUrl()))
+                            .collect(Collectors.toList()))
+                    .reviewManagement(true)
+                    .build();
+            responseDtoList.add(responseDto);
+        }
+        return responseDtoList;
     }
 
 //    public ResponseDto<?> deleteMember(HttpServletRequest request) {

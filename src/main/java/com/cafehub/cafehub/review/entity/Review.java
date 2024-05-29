@@ -29,6 +29,10 @@ public class Review extends BaseEntity{
     @Lob
     private String content;
 
+    private Integer likeCount;
+
+    private Integer commentCount;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cafe_id")

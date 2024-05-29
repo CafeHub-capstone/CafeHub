@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class LikeReviewRequestDto {
-    private boolean reviewChecked;
+    private Boolean reviewChecked;
 }

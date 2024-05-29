@@ -6,6 +6,9 @@ import com.cafehub.cafehub.member.mypage.dto.ProfileRequestDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +22,18 @@ public class MyPageController {
     private final MyPageService myPageService;
 
     @GetMapping("/api/auth/mypage")
-    public ResponseDto<?> getMyProfile(HttpServletRequest request) {
-        return ResponseDto.success(myPageService.getMyProfile(request));
+    public ResponseEntity<?> getProfile(HttpServletRequest request) {
+        return ResponseEntity.ok().body(myPageService.getMyProfile(request));
+    }
+
+    @GetMapping("/api/auth/mypage/reviews")
+    public ResponseEntity<?> getProfileReviews(@PageableDefault(page = 0, size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable, HttpServletRequest request) {
+        return ResponseEntity.ok().body(myPageService.getMyReviews(pageable, request));
+    }
+
+    @GetMapping("/api/auth/mypage/comments")
+    public ResponseEntity<?> geyProfileComments(HttpServletRequest request) {
+        return ResponseEntity.ok().body(myPageService.getMyComments(request));
     }
 
     @PostMapping("/api/auth/mypage")

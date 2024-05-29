@@ -40,13 +40,13 @@ public class LikeReviewService {
         /**
          * 리뷰 좋아요 등록
          */
-        if (like.isEmpty() && likeReviewRequestDto.isReviewChecked()) {
+        if (like.isEmpty() && likeReviewRequestDto.getReviewChecked()) {
             LikeReview likeReview = LikeReview.builder()
                     .review(review)
                     .member(member)
                     .build();
             likeReviewRepository.save(likeReview);
-        } else if (like.isPresent() && !likeReviewRequestDto.isReviewChecked()){
+        } else if (like.isPresent() && !likeReviewRequestDto.getReviewChecked()){
             likeReviewRepository.delete(like.get());
         }
         return ResponseDto.success("Update LikeReview Success");
