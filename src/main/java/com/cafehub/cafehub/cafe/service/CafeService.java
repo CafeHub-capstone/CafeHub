@@ -1,13 +1,12 @@
 package com.cafehub.cafehub.cafe.service;
 
-import com.cafehub.cafehub.cafe.request.CafeInfoRequest;
-import com.cafehub.cafehub.cafe.request.CafeListRequest;
-import com.cafehub.cafehub.cafe.response.CafeInfoResponse;
-import com.cafehub.cafehub.cafe.response.CafeListResponse;
+import com.cafehub.cafehub.cafe.request.CafeInfoRequestDTO;
+import com.cafehub.cafehub.cafe.request.CafeListGetRequestDTO;
+import com.cafehub.cafehub.common.dto.ResponseDto;
 
 public interface CafeService {
 
-    CafeListResponse getCafeListResponseSortedByType(CafeListRequest cafeListRequest);
+    ResponseDto<?> getCafeListSortedByType(CafeListGetRequestDTO cafeListGetRequestDTO);
 
-    CafeInfoResponse getCafeInfo(CafeInfoRequest cafeInfoRequest);
+    ResponseDto<?> getCafeInfo(CafeInfoRequestDTO cafeInfoRequestDTO);
 }

@@ -1,6 +1,6 @@
-package com.cafehub.cafehub.menu.request;
+package com.cafehub.cafehub.cafe.response;
 
-import com.cafehub.cafehub.menu.response.MenuResponse;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,8 +12,12 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AllMenuRequest {
+public class CafeListResponseDTO {
 
+    private List<CafeDetailsDTO> cafeList;
 
-    private Long cafeId;
+    private Boolean isLast;
+
+    private Integer currentPage;
+
 }

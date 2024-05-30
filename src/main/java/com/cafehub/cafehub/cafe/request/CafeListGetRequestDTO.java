@@ -1,5 +1,6 @@
 package com.cafehub.cafehub.cafe.request;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CafeInfoRequest {
+public class CafeListGetRequestDTO {
 
-    private Long cafeId;
+    private String theme;
+
+    private String sortedByType;
+
+    private Integer currentPage;
 }

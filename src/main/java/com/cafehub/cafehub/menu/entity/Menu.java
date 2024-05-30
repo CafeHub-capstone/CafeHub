@@ -1,7 +1,7 @@
 package com.cafehub.cafehub.menu.entity;
 
 import com.cafehub.cafehub.cafe.entity.Cafe;
-import com.cafehub.cafehub.common.entity.BaseEntity;
+import com.cafehub.cafehub.common.dto.Timestamped;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Menu extends BaseEntity{
+public class Menu extends Timestamped {
 
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -30,7 +30,4 @@ public class Menu extends BaseEntity{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cafe_id")
     private Cafe cafe;
-
-
-
 }

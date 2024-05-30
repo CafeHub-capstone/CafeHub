@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -14,4 +16,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Slice<Review> findAllByCafeId(Pageable pageable, Long cafeId);
 
+    // cafe 에서 필요함
+    @Query("SELECT DISTINCT r FROM Review r JOIN FETCH r.member LEFT JOIN FETCH r.reviewPhotos WHERE r.cafe.id = :cafeId")
+    List<Review> findAllByCafeIdWithMemberAndPhotos(@Param("cafeId") Long cafeId, Pageable pageable);
 }
