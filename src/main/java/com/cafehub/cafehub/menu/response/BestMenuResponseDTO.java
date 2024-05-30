@@ -5,18 +5,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AllMenuResponse {
+public class BestMenuResponseDTO {
 
-    private Boolean success;
+    private Long menuId;
 
-    private List<MenuResponse> menuList;
+    private String name;
 
-    private String errorMessage;
+    private Integer price;
 }
-

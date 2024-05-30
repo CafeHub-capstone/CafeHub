@@ -1,5 +1,7 @@
 package com.cafehub.cafehub.menu.response;
 
+
+import com.cafehub.cafehub.menu.entity.Category;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,11 +11,13 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BestMenuResponse {
+public class MenuResponseDTO {
 
     private Long menuId;
 
-    private String name;
+    private Category category;
+
+    private String menuName;
 
     private Integer price;
 }
