@@ -8,7 +8,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
 
 
     properties:
@@ -18,6 +18,19 @@ spring:
 
 logging.level:
   org.hibernate.SQL: debug
+
+
+jwt:
+  secret: aBcD3FgH1JkLmN6PqR9sTuV2xYzZ4Xw7ZCXcDsf34sSDaF2KLE233fdsFWEefF325ggJK436lkGsGgkGJ9w43lk
+
+kakao:
+  restapi-key: 0ee2193a048d38e5d783af58eac76e36
+  redirect-url: http://localhost:8080/api/oauth
+
+cloud:
+  aws:
+    s3:
+      bucket: idontknow
 
 springdoc:
   packages-to-scan: com.cafehub                                     # API 문서를 생성할 컨트롤러 클래스가 포함된 패키지 지정

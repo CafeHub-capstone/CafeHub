@@ -31,6 +31,10 @@ public class Review extends Timestamped {
     @Lob
     private String content;
 
+    private Integer likeCount;
+
+    private Integer commentCount;
+
 
     private Integer likeCount;
 

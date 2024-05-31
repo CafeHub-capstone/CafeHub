@@ -30,6 +30,7 @@ import lombok.Getter;
  *     우리가 추후 프론트와 로그인 성공은 2001, 리스트 반환 성공은 2002 이런 API 규칙을 만들어서 구분지어 줄 수 있는 여지도 생기게 됨
  */
 
+
 @Getter
 @AllArgsConstructor
 public class ResponseDto<T> {
@@ -44,5 +45,6 @@ public class ResponseDto<T> {
     public static <T> ResponseDto<T> fail(ErrorCode errorcode) {
         return new ResponseDto<>(false, null, errorcode);
     }
+
 
 }

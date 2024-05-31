@@ -33,6 +33,19 @@ public class Member extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    public Member(String email, String nickname) {
+        this.email = email;
+        this.nickname = nickname;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateProfileImg(String profileImg) {
+        this.userPhotoUrl = profileImg;
+    }
+
 
     /**
      * Member 테이블의 경우는 양방향 매핑을 해서는 안된다.
