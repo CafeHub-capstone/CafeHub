@@ -36,11 +36,6 @@ public class Review extends Timestamped {
     private Integer commentCount;
 
 
-    private Integer likeCount;
-
-
-    private Integer commentCount;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cafe_id")
     private Cafe cafe;

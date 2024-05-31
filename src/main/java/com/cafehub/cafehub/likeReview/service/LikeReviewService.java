@@ -7,6 +7,7 @@ import com.cafehub.cafehub.likeReview.entity.LikeReview;
 import com.cafehub.cafehub.likeReview.repository.LikeReviewRepository;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.review.entity.Review;
+import com.cafehub.cafehub.review.repository.ReviewRepository;
 import com.cafehub.cafehub.security.UserDetailsImpl;
 import com.cafehub.cafehub.security.jwt.JwtProvider;
 import jakarta.servlet.http.HttpServletRequest;
