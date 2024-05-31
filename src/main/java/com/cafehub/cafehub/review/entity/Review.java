@@ -2,6 +2,7 @@ package com.cafehub.cafehub.review.entity;
 
 import com.cafehub.cafehub.cafe.entity.Cafe;
 import com.cafehub.cafehub.comment.entity.Comment;
+import com.cafehub.cafehub.common.dto.Timestamped;
 import com.cafehub.cafehub.common.entity.BaseEntity;
 import com.cafehub.cafehub.likeReview.entity.LikeReview;
 import com.cafehub.cafehub.member.entity.Member;
@@ -17,7 +18,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Review extends BaseEntity{
+public class Review extends Timestamped {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +35,11 @@ public class Review extends BaseEntity{
 
     private Integer commentCount;
 
+
+    private Integer likeCount;
+
+
+    private Integer commentCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cafe_id")
@@ -58,16 +65,22 @@ public class Review extends BaseEntity{
      * 두 엔티티 간의 일관성을 계속 유지해야 함으로써 문제가 생길 수 있다.
      * 또한 한 트랜잭션 안에서 영속성 컨텍스트를 이용할 경우 데이터 적합성이 불일치 할 수 있다.
      */
-//    @OneToMany(mappedBy = "review")
-//    private List<ReviewPhoto> reviewPhotos = new ArrayList<>();
-//
-//    @OneToMany(mappedBy = "review")
-//    private List<Comment> comments = new ArrayList<>();
+
+    // One To Many로 데이터를 끌고오는게 아니라 JPQL 로 fetchJoin을 하기 위해서 열었음
+    @OneToMany(mappedBy = "review")
+    @Builder.Default
+    private List<ReviewPhoto> reviewPhotos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "review")
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
 //
 //    @OneToMany(mappedBy = "review")
 //    private List<LikeReview> likeReviews = new ArrayList<>();
 
-
-
-
+    // updateReview 부분 최적화.
+    public void updateContent(Integer rating, String content) {
+        this.rating = rating;
+        this.content = content;
+    }
 }

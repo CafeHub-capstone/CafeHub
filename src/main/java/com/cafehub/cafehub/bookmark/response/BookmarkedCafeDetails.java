@@ -1,17 +1,15 @@
-package com.cafehub.cafehub.cafe.response;
+package com.cafehub.cafehub.bookmark.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
-
-@Getter
 @Setter
+@Builder
+@Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class CafeResponseForCafeList {
+public class BookmarkedCafeDetails {
 
     private Long cafeId;
 
@@ -24,4 +22,5 @@ public class CafeResponseForCafeList {
     private String cafeTheme;
 
     private Integer cafeReviewNum;
+
 }

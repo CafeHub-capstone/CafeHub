@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+// 에러 코드는 이곳에서 한번에 관리 한다.
+
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 @AllArgsConstructor
 @Getter
@@ -22,6 +24,7 @@ public enum ErrorCode {
     // 프로필 변경 실패
     FAILED_CHANGE_PROFILE("FAILED_CHANGE_PROFILE", "Failed Change Profile"),
     // 용량 초과
+
     FILE_SIZE_EXCEED("FILE_SIZE_EXCEED", "File Size Exceed. Limit is 1MB"),
     //요청 위치에 리소스 없음
     NULL_ID("NULL_ID", "Id Doesn't Exist"),
