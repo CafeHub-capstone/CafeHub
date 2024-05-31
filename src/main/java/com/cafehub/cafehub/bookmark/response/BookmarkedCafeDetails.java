@@ -1,13 +1,15 @@
 package com.cafehub.cafehub.bookmark.response;
 
 import lombok.*;
+
 import java.math.BigDecimal;
 @Setter
+@Builder
 @Getter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class CafeForMarkedResponseDTO {
+public class BookmarkedCafeDetails {
 
     private Long cafeId;
 
