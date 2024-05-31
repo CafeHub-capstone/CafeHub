@@ -13,6 +13,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,15 +25,19 @@ public class MemberController {
     private final KaKaoMemberService kaKaoMemberService;
 
     @GetMapping("/api/member/login")
-    public String kakaoLogin(HttpServletResponse response) throws IOException {
-        return kaKaoMemberService.kakaoRedirct(response);
+    public void kakaoLogin(HttpServletResponse response) throws IOException {
+        kaKaoMemberService.kakaoRedirct(response);
     }
 
     @GetMapping("/api/oauth")
-    public ResponseEntity<?> redirectKakaoLogin(@RequestParam("code") String code, HttpServletResponse response) throws JsonProcessingException {
+    public ResponseEntity<?> redirectKakaoLogin(@RequestParam("code") String code, HttpServletResponse response, HttpServletRequest request) throws URISyntaxException, JsonProcessingException {
         log.info("Received OAuth code: {}", code);
         kaKaoMemberService.kakaoLogin(code, response);
-        return ResponseEntity.ok().body(ResponseDto.success("Kakao OAuth Success"));
+        String redirectUri = request.getHeader("referer");
+        if (redirectUri == null || redirectUri.isEmpty()) {
+            redirectUri = "http://localhost:3000/";
+        }
+        return ResponseEntity.ok().location(new URI(redirectUri)).build();
     }
 
     @PostMapping("/api/auth/reissue")

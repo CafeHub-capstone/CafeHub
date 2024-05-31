@@ -46,12 +46,12 @@ public class KaKaoMemberService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
 
-    public String kakaoRedirct(HttpServletResponse response) throws IOException {
+    public void kakaoRedirct(HttpServletResponse response) throws IOException {
         String encodeRedirectUrl = URLEncoder.encode(kakaoRedirectUrl, StandardCharsets.UTF_8);
         String redirectUrl = "https://kauth.kakao.com/oauth/authorize?client_id="
                 + kakaoKey + "&redirect_uri=" + encodeRedirectUrl + "&response_type=code";
        log.info("Redirection to: {}", redirectUrl);
-        return redirectUrl;
+       response.sendRedirect(redirectUrl);
     }
 
     public void kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {

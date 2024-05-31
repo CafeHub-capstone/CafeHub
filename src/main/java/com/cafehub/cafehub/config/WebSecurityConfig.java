@@ -71,6 +71,8 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedHeaders(List.of("*"));
+        corsConfiguration.addExposedHeader("Authorization");
+        corsConfiguration.addExposedHeader("refreshToken");
         corsConfiguration.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
