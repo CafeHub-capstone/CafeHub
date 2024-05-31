@@ -1,14 +1,14 @@
 package com.cafehub.cafehub.bookmark.service;
 
 import com.cafehub.cafehub.bookmark.request.BookmarkRequestDto;
-import com.cafehub.cafehub.bookmark.response.BookmarkListResponseDto;
-import com.cafehub.cafehub.bookmark.response.BookmarkResponseDto;
+import com.cafehub.cafehub.common.dto.ResponseDto;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface BookmarkService {
     //리스트 조회
-    BookmarkListResponseDto getBookmarkList();
+    ResponseDto<?> getBookmarkList(HttpServletRequest request);
     //등록
-    BookmarkResponseDto saveBookmark (BookmarkRequestDto request);
+    ResponseDto<?> saveBookmark (BookmarkRequestDto bookmarkRequestDto, HttpServletRequest request);
     //삭제
-    BookmarkResponseDto deleteBookmark(BookmarkRequestDto request);
+    ResponseDto<?> deleteBookmark(BookmarkRequestDto bookmarkRequestDto, HttpServletRequest request);
 }
