@@ -35,7 +35,6 @@ public class Review extends Timestamped {
 
     private Integer commentCount;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cafe_id")
     private Cafe cafe;
@@ -77,5 +76,9 @@ public class Review extends Timestamped {
     public void updateContent(Integer rating, String content) {
         this.rating = rating;
         this.content = content;
+    }
+
+    public void updateCommentCount(Integer commentCount){
+        this.commentCount = commentCount;
     }
 }

@@ -1,6 +1,6 @@
 package com.cafehub.cafehub.member.mypage.dto;
 
-import com.cafehub.cafehub.comment.response.CommentResponseDto;
+import com.cafehub.cafehub.comment.response.CommentResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ProfileCommentsResponseDto {
 
-    private List<CommentResponseDto> commentList;
+    private List<CommentResponseDTO> commentList;
 
     private Boolean isLast;
 

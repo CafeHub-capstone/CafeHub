@@ -1,20 +1,20 @@
-package com.cafehub.cafehub.member.mypage.dto;
+package com.cafehub.cafehub.comment.response;
 
-import com.cafehub.cafehub.review.response.ReviewResponse;
+import com.cafehub.cafehub.comment.entity.Comment;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
-@Builder
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProfileReviewsResponseDto {
+public class GetAllCommentResponseDTO {
 
-    private List<ReviewResponse> reviewList;
+    private List<CommentResponseDTO> comments;
 
     private Boolean isLast;
 
