@@ -20,6 +20,7 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Review extends Timestamped {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name = "review_id")

@@ -26,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -114,8 +113,9 @@ public class CafeServiceImpl implements CafeService{
     }
 
     private Member getLoginMember() {
-        String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        return memberRepository.findByEmail(currentMemberEmail);
+//        String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+//        return memberRepository.findByEmail(currentMemberEmail);
+          return null;
     }
 
     private Boolean isBookmarkChecked(Long cafeId, Member loginMember) {

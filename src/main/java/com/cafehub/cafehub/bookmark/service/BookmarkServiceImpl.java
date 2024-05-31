@@ -47,7 +47,7 @@ public class BookmarkServiceImpl implements BookmarkService{
                 .cafeName(cafe.getName())
                 .cafePhotoUrl(cafe.getCafePhotoUrl())
                 .cafeRating(cafe.getRating())
-                .cafeTheme(cafe.getTheme().toString())
+                .cafeTheme(cafe.getTheme().getName())
                 .cafeReviewNum(cafe.getReviewCount())
                 .build()));
 
@@ -84,7 +84,7 @@ public class BookmarkServiceImpl implements BookmarkService{
         /**
          * 추후 로그인 여부 확인
          */
-        //Member member = getMemberFromJwt(request);
+//      Member member = getMemberFromJwt(request);
 
         Member member = memberRepository.getOne(2l);
         Cafe cafe = cafeRepository.findById(bookmarkRequestDto.getCafeId()).orElse(null);
