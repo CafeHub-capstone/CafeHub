@@ -80,7 +80,7 @@ public class ReviewServiceImpl implements ReviewService {
                     review.getMember().getNickname(),
                     review.getRating(),
                     review.getContent(),
-                    review.getCreatedAt().format(formatter), // 날짜를 yyyy-MM-dd 형식으로 포맷
+                    review.getCreatedAt(), // 날짜를 yyyy-MM-dd 형식으로 포맷
                     review.getLikeCount(),
                     false, // 로그인 구현 전이라 좋아요 눌렀는지는 false처리
                     review.getCommentCount(),

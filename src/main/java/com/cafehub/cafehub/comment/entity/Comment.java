@@ -1,5 +1,6 @@
 package com.cafehub.cafehub.comment.entity;
 
+import com.cafehub.cafehub.common.dto.Timestamped;
 import com.cafehub.cafehub.common.entity.BaseEntity;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.review.entity.Review;
@@ -11,7 +12,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Comment extends BaseEntity{
+public class Comment extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
