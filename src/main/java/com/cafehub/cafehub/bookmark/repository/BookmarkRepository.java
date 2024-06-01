@@ -16,15 +16,8 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long>{
 
     boolean existsByCafeIdAndMemberId(Long cafeId, Long memberId);
 
-  /*  @Query("select new com.cafehub.cafehub.bookmark.response.CafeForMarkedResponseDTO" +
-            "(b.cafe.id, b.cafe.cafePhotoUrl, b.cafe.name, b.cafe.rating, b.cafe.theme.name, b.cafe.reviewCount) " +
-            "from Bookmark b " +
-            "where b.member.id = :memberId")
-    List<CafeForMarkedResponseDTO> findAllByMemberId(@Param("memberId") Long memberId);*/
-
-
     void deleteByCafeIdAndMemberId(Long cafeId, Long memberId);
 
-    @Query("select c from Cafe c JOIN Bookmark b ON c.id = b.cafe.id WHERE b.member.id = :memberId")
-    List<Cafe> findAllByMember_Id(Long memberId);
+    @Query("select distinct b from Bookmark b join fetch b.cafe c join fetch c.theme where b.member.id = :memberId")
+    List<Bookmark> findAllByMemberId(Long memberId);
 }
