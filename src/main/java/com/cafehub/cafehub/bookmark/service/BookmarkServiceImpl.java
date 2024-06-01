@@ -38,20 +38,23 @@ public class BookmarkServiceImpl implements BookmarkService{
         //Member member = getMemberFromJwt(request);
         Member member = memberRepository.findById(2l).get();
 
-        List<BookmarkedCafeDetails> list = new ArrayList<>();
-        List<Cafe> cafes= bookmarkRepository.findAllByMember_Id(member.getId());
+        //3중 조인으로 해결할 것.
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByMemberId(member.getId());
+        List<BookmarkedCafeDetails> cafeDetails =  bookmarks.stream()
+                            .map(bookmark -> {
+                                Cafe cafe = bookmark.getCafe();
+                                return BookmarkedCafeDetails.builder()
+                                        .cafeId(cafe.getId())
+                                        .cafeRating(cafe.getRating())
+                                        .cafeTheme(cafe.getTheme().getName())
+                                        .cafePhotoUrl(cafe.getCafePhotoUrl())
+                                        .cafeReviewNum(cafe.getReviewCount())
+                                        .cafeName(cafe.getName())
+                                        .build();
+                            })
+                            .toList();
 
-
-        cafes.forEach(cafe -> list.add(new BookmarkedCafeDetails().builder()
-                .cafeId(cafe.getId())
-                .cafeName(cafe.getName())
-                .cafePhotoUrl(cafe.getCafePhotoUrl())
-                .cafeRating(cafe.getRating())
-                .cafeTheme(cafe.getTheme().getName())
-                .cafeReviewNum(cafe.getReviewCount())
-                .build()));
-
-        return ResponseDto.success(list);
+        return ResponseDto.success(cafeDetails);
     }
 
     //북마크 저장
