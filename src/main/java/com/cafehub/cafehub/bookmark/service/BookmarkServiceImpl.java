@@ -9,8 +9,11 @@ import com.cafehub.cafehub.cafe.repository.CafeRepository;
 import com.cafehub.cafehub.common.dto.ResponseDto;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.member.repository.MemberRepository;
+import com.cafehub.cafehub.security.UserDetailsImpl;
+import com.cafehub.cafehub.security.jwt.JwtProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +29,7 @@ public class BookmarkServiceImpl implements BookmarkService{
     //궁금한게.. -> request 다 필요한거 아닌가..?
     private final BookmarkRepository bookmarkRepository;
     private final CafeRepository cafeRepository;
-    private final MemberRepository memberRepository;
-    //private final JwtProvider jwtProvider;
+    private final JwtProvider jwtProvider;
 
     //북마크 조회
     @Override
@@ -35,23 +37,25 @@ public class BookmarkServiceImpl implements BookmarkService{
         /**
          * 추후 로그인 여부 확인
          */
-        //Member member = getMemberFromJwt(request);
-        Member member = memberRepository.findById(2l).get();
+        Member member = getMemberFromJwt(request);
 
-        List<BookmarkedCafeDetails> list = new ArrayList<>();
-        List<Cafe> cafes= bookmarkRepository.findAllByMember_Id(member.getId());
+        //3중 조인으로 해결할 것.
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByMemberId(member.getId());
+        List<BookmarkedCafeDetails> cafeDetails =  bookmarks.stream()
+                            .map(bookmark -> {
+                                Cafe cafe = bookmark.getCafe();
+                                return BookmarkedCafeDetails.builder()
+                                        .cafeId(cafe.getId())
+                                        .cafeRating(cafe.getRating())
+                                        .cafeTheme(cafe.getTheme().getName())
+                                        .cafePhotoUrl(cafe.getCafePhotoUrl())
+                                        .cafeReviewNum(cafe.getReviewCount())
+                                        .cafeName(cafe.getName())
+                                        .build();
+                            })
+                            .toList();
 
-
-        cafes.forEach(cafe -> list.add(new BookmarkedCafeDetails().builder()
-                .cafeId(cafe.getId())
-                .cafeName(cafe.getName())
-                .cafePhotoUrl(cafe.getCafePhotoUrl())
-                .cafeRating(cafe.getRating())
-                .cafeTheme(cafe.getTheme().getName())
-                .cafeReviewNum(cafe.getReviewCount())
-                .build()));
-
-        return ResponseDto.success(list);
+        return ResponseDto.success(cafeDetails);
     }
 
     //북마크 저장
@@ -60,10 +64,10 @@ public class BookmarkServiceImpl implements BookmarkService{
     public ResponseDto<?> saveBookmark(BookmarkRequestDto bookmarkRequestDto, HttpServletRequest request) {
 
         Cafe cafe = cafeRepository.findById(bookmarkRequestDto.getCafeId()).get();
-        //Member member = getMemberFromJwt(request);
-        Member member = memberRepository.getOne(2l);
+        Member member = getMemberFromJwt(request);
 
-        // if(bookmarkRepository.existsByMemberIdAndCafeId(1L, request.getCafeId())) throw new MemberBookmarkAlreadyExistException();
+
+//         if(bookmarkRepository.existsByMemberIdAndCafeId(1L, request.getCafeId())) throw new MemberBookmarkAlreadyExistException();
 
         Bookmark bookmark = Bookmark.builder()
                 .member(member)
@@ -84,9 +88,8 @@ public class BookmarkServiceImpl implements BookmarkService{
         /**
          * 추후 로그인 여부 확인
          */
-//      Member member = getMemberFromJwt(request);
+      Member member = getMemberFromJwt(request);
 
-        Member member = memberRepository.getOne(2l);
         Cafe cafe = cafeRepository.findById(bookmarkRequestDto.getCafeId()).orElse(null);
 
         //해당하는 cafe가 없는 경우-> 에러내용은 내가 작성?
@@ -105,10 +108,10 @@ public class BookmarkServiceImpl implements BookmarkService{
         }
     }
 
-   /* private Member getMemberFromJwt(HttpServletRequest request) {
+   private Member getMemberFromJwt(HttpServletRequest request) {
         Authentication authentication = jwtProvider.getAuthentication(request.getHeader("Authorization").substring(7));
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         return userDetails.getMember();
-    }*/
+    }
 
 }

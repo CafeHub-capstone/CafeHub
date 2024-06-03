@@ -23,7 +23,7 @@ public class ReviewResponse {
 
     private String reviewContent;
 
-    private LocalDateTime reviewCreateDate;
+    private LocalDateTime reviewCreateAt;
 
     private Integer likeCnt;
 

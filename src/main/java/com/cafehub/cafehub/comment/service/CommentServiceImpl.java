@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -41,25 +42,21 @@ public class CommentServiceImpl implements CommentService{
     @Override
     public ResponseDto<?> getAllComment(GetAllCommentRequestDTO request) {
 
+        String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
         // 슬라이스 처리를 위해 슬라이스 생성.
-        Slice<Comment> commentSlice = commentRepository.findAllByReviewId(
-                PageRequest.of(request.getCurrentPage(), COMMENT_PAGING_SIZE, Sort.by(Sort.Direction.DESC, "createdAt")),
-                request.getReviewId());
+        Slice<Comment> commentSlice = commentRepository.findAllByReviewIdWithMember(request.getReviewId(),
+                PageRequest.of(request.getCurrentPage(), COMMENT_PAGING_SIZE, Sort.by(Sort.Direction.DESC, "createdAt")));
 
-        List<CommentResponseDTO> comments = new ArrayList<>();
-
-        for (Comment comment: commentSlice){
-            CommentResponseDTO commentResponseDTO = CommentResponseDTO.builder()
+        List<CommentResponseDTO> comments = commentSlice.getContent().stream().map(comment -> {
+            return CommentResponseDTO.builder()
                     .commentId(comment.getId())
-                    .nickname(comment.getMember().getNickname()) // 개 똥 코드 다시 클린하게 해야함.
+                    .nickname(comment.getMember().getNickname())
                     .commentContent(comment.getContent())
                     .commentDate(comment.getCreatedAt())
-                    .commentManagement(comment.getMember().getEmail().equals( // 쌉 쓰 레기 코드.
-                            SecurityContextHolder.getContext().getAuthentication().getName()
-                    ))
+                    .commentManagement(comment.getMember().getEmail().equals(currentMemberEmail))
                     .build();
-            comments.add(commentResponseDTO);
-        }
+        }).collect(Collectors.toList());
 
         GetAllCommentResponseDTO response = new GetAllCommentResponseDTO(comments, commentSlice.isLast(), commentSlice.getNumber());
 

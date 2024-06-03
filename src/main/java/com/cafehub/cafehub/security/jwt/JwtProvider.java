@@ -59,6 +59,8 @@ public class JwtProvider {
                 .signWith(key)
                 .compact();
 
+        System.out.println("accessToken : " + accessToken);
+
         int REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 14; //2주일
         String refreshToken = Jwts.builder()
                 .subject(member.getEmail())

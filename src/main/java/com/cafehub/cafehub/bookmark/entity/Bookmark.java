@@ -1,7 +1,7 @@
 package com.cafehub.cafehub.bookmark.entity;
 
 import com.cafehub.cafehub.cafe.entity.Cafe;
-import com.cafehub.cafehub.common.entity.BaseEntity;
+import com.cafehub.cafehub.common.dto.Timestamped;
 import com.cafehub.cafehub.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Bookmark extends BaseEntity {
+public class Bookmark extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
