@@ -147,7 +147,7 @@ public class MyPageService {
                     .author(review.getMember().getNickname())
                     .reviewRating(review.getRating())
                     .reviewContent(review.getContent())
-                    .reviewCreateDate(review.getCreatedAt())
+                    .reviewCreateAt(review.getCreatedAt())
                     .likeCnt(review.getLikeCount())
                     .likeChecked(checkLike(review.getMember(), review))
                     .commentCnt(review.getCommentCount())

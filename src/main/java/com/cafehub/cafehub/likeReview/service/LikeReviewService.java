@@ -46,8 +46,12 @@ public class LikeReviewService {
                     .review(review)
                     .member(member)
                     .build();
+
+            review.updateLikeCount(review.getLikeCount()+1);
+
             likeReviewRepository.save(likeReview);
         } else if (like.isPresent() && !likeReviewRequestDto.getReviewChecked()){
+            review.updateLikeCount(review.getLikeCount()-1);
             likeReviewRepository.delete(like.get());
         }
         return ResponseDto.success("Update LikeReview Success");

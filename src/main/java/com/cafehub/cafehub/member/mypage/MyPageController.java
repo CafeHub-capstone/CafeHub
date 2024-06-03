@@ -27,12 +27,12 @@ public class MyPageController {
     }
 
     @GetMapping("/api/auth/mypage/reviews")
-    public ResponseEntity<?> getProfileReviews(@PageableDefault(page = 0, size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable, HttpServletRequest request) {
+    public ResponseEntity<?> getProfileReviews(@PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable, HttpServletRequest request) {
         return ResponseEntity.ok().body(myPageService.getMyReviews(pageable, request));
     }
 
     @GetMapping("/api/auth/mypage/comments")
-    public ResponseEntity<?> geyProfileComments(@PageableDefault(page = 0, size = 3, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable, HttpServletRequest request) {
+    public ResponseEntity<?> geyProfileComments(@PageableDefault(page = 0, size = 3, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable, HttpServletRequest request) {
         return ResponseEntity.ok().body(myPageService.getMyComments(pageable, request));
     }
 

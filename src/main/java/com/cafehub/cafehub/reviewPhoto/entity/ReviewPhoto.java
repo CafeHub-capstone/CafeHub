@@ -1,6 +1,6 @@
 package com.cafehub.cafehub.reviewPhoto.entity;
 
-import com.cafehub.cafehub.common.entity.BaseEntity;
+import com.cafehub.cafehub.common.dto.Timestamped;
 import com.cafehub.cafehub.review.entity.Review;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ReviewPhoto extends BaseEntity{
+public class ReviewPhoto extends Timestamped {
 
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)

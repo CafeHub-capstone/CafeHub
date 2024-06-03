@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,7 +53,7 @@ public class ReviewServiceImpl implements ReviewService {
         // 로그인 관련해서 수정이필요함
 
         Slice<Review> reviews = reviewRepository.findAllByCafeId(
-                PageRequest.of(request.getCurrentPage(), REVIEW_PAGING_SIZE, Sort.by(Sort.Direction.DESC, "createdDate")),
+                PageRequest.of(request.getCurrentPage(), REVIEW_PAGING_SIZE, Sort.by(Sort.Direction.DESC, "createdAt")),
                 request.getCafeId());
 
         // 리뷰 ID 목록을 추출
@@ -100,14 +101,16 @@ public class ReviewServiceImpl implements ReviewService {
         // 이미 리뷰를 작성한 사람은 리뷰 작성 못하게 기능 추가해야함.
 
         // 로그인 된 사람만 통과 시키는 로직이 필요함
-        // String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getEmail(); // 현재 로그인한 사용자의 이메일
+        String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Member loginMember = memberRepository.findByEmail(currentMemberEmail).orElse(null);
+
+
 
         // 이 로직은 DB와 통신을 너무 많이함, 순수 JPA에서 영속성 컨텍스트에 persist 해놓고 마지막에 commit() 으로  한번에 save 하는 방법을 고려 해야함
         // ㄴ> 해결 중
 
         // 카페와 회원 정보를 가져옴
         Cafe cafe = cafeRepository.findById(request.getCafeId()).get();
-        Member member = memberRepository.findById(1L).get();
 
         Review review = Review.builder()
                 .rating(request.getReviewRating())
@@ -115,7 +118,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .likeCount(0)
                 .commentCount(0)
                 .cafe(cafeRepository.findById(request.getCafeId()).get())
-                .member(memberRepository.findById(1L).get())
+                .member(loginMember)
                 .build();
         reviewRepository.save(review);
 

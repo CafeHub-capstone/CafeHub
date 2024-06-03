@@ -37,12 +37,12 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
      * 실제 운영 환경에서는 사용안함
      * H2 데이터베이스에서 개발 및 디버깅하는동안 사용
      */
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        // h2-console 사용에 대한 허용 (CSRF, FrameOptions 무시)
-        return (web) -> web.ignoring()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**"));
-    }
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        // h2-console 사용에 대한 허용 (CSRF, FrameOptions 무시)
+//        return (web) -> web.ignoring()
+//                .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**"));
+//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

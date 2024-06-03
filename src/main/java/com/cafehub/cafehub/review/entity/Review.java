@@ -3,8 +3,6 @@ package com.cafehub.cafehub.review.entity;
 import com.cafehub.cafehub.cafe.entity.Cafe;
 import com.cafehub.cafehub.comment.entity.Comment;
 import com.cafehub.cafehub.common.dto.Timestamped;
-import com.cafehub.cafehub.common.entity.BaseEntity;
-import com.cafehub.cafehub.likeReview.entity.LikeReview;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.reviewPhoto.entity.ReviewPhoto;
 import jakarta.persistence.*;
@@ -80,5 +78,9 @@ public class Review extends Timestamped {
 
     public void updateCommentCount(Integer commentCount){
         this.commentCount = commentCount;
+    }
+
+    public void updateLikeCount(Integer likeCount){
+        this.likeCount = likeCount;
     }
 }

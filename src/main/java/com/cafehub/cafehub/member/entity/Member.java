@@ -1,22 +1,15 @@
 package com.cafehub.cafehub.member.entity;
 
-import com.cafehub.cafehub.bookmark.entity.Bookmark;
-import com.cafehub.cafehub.comment.entity.Comment;
-import com.cafehub.cafehub.common.entity.BaseEntity;
-import com.cafehub.cafehub.likeReview.entity.LikeReview;
-import com.cafehub.cafehub.review.entity.Review;
+import com.cafehub.cafehub.common.dto.Timestamped;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Member extends BaseEntity{
+public class Member extends Timestamped {
 
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
