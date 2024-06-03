@@ -2,6 +2,8 @@ package com.cafehub.cafehub.review.service;
 
 import com.cafehub.cafehub.cafe.entity.Cafe;
 import com.cafehub.cafehub.cafe.repository.CafeRepository;
+import com.cafehub.cafehub.likeReview.entity.LikeReview;
+import com.cafehub.cafehub.likeReview.repository.LikeReviewRepository;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.member.repository.MemberRepository;
 import com.cafehub.cafehub.review.entity.Review;
@@ -23,11 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,10 +47,15 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewPhotoRepository reviewPhotoRepository;
 
+    private final LikeReviewRepository likeReviewRepository;
+
     @Override
     public AllReviewGetResponse getAllReviewOfCafe(AllReviewGetRequest request) {
-        // 리뷰들을 슬라이스해서 넘겨주는 게 목표.
-        // 로그인 관련해서 수정이필요함
+
+        // 현재 로그인한 사용자의 이메일을 가져옴
+        String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        // 현재 로그인한 사용자의 아이디를 가져옴
+        Long currentMemberId = memberRepository.findByEmail(currentMemberEmail).get().getId();
 
         Slice<Review> reviews = reviewRepository.findAllByCafeId(
                 PageRequest.of(request.getCurrentPage(), REVIEW_PAGING_SIZE, Sort.by(Sort.Direction.DESC, "createdAt")),
@@ -66,28 +71,43 @@ public class ReviewServiceImpl implements ReviewService {
         Map<Long, List<ReviewPhoto>> reviewPhotosMap = reviewPhotos.stream()
                 .collect(Collectors.groupingBy(reviewPhoto -> reviewPhoto.getReview().getId()));
 
+       // 현재 멤버가 좋아요한 리뷰 ID 리스트 생성.
+        List<Long> currentMemberLikeReviewIds = likeReviewRepository.findByMemberIdAndReviewIdIn(currentMemberId, reviewIds)
+                .stream()
+                .map(likeReview -> likeReview.getReview().getId())
+                .collect(Collectors.toList());
+
+        // 좋아요한 리뷰 ID를 Set으로 변환
+        Set<Long> likedReviewIdSet = new HashSet<>(currentMemberLikeReviewIds);
+
         // 날짜 포맷터 설정
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         // 리뷰 리스트 생성.
         List<ReviewResponse> reviewList = reviews.stream().map(review -> {
-            // List<PhotoUrlResponse> photoUrls = reviewPhotoRepository.findAllByReviewId(review.getId()).stream()
             List<PhotoUrlResponse> photoUrls = reviewPhotosMap.getOrDefault(review.getId(), Collections.emptyList()).stream()
                     .map(reviewPhoto -> new PhotoUrlResponse(reviewPhoto.getReviewPhotoUrl()))
                     .collect(Collectors.toList());
 
-            return new ReviewResponse(
-                    review.getId(),
-                    review.getMember().getNickname(),
-                    review.getRating(),
-                    review.getContent(),
-                    review.getCreatedAt(), // 날짜를 yyyy-MM-dd 형식으로 포맷
-                    review.getLikeCount(),
-                    false, // 로그인 구현 전이라 좋아요 눌렀는지는 false처리
-                    review.getCommentCount(),
-                    photoUrls,
-                    false // 로그인 미구현으로 리뷰 관리 false
-            );
+            // 사용자가 이 리뷰를 좋아요 했는지 확인
+            Boolean isliked = likedReviewIdSet.contains(review.getId()); //
+//            Boolean isliked = currentMemberLikeReviewIds.contains(review.getId());
+
+            // 사용자가 이 리뷰를 작성했는지 확인
+            boolean isReviewOwner = review.getMember().getEmail().equals(currentMemberEmail);
+
+            return ReviewResponse.builder()
+                    .reviewId(review.getId())
+                    .author(review.getMember().getNickname())
+                    .reviewRating(review.getRating())
+                    .reviewContent(review.getContent())
+                    .reviewCreateAt(LocalDateTime.parse(review.getCreatedAt().format(formatter))) // 날짜를 yyyy-MM-dd 형식으로 포맷
+                    .likeCnt(review.getLikeCount())
+                    .likeChecked(isliked)
+                    .commentCnt(review.getCommentCount())
+                    .photoUrls(photoUrls)
+                    .reviewManagement(isReviewOwner) // 로그인 미구현으로 리뷰 관리 false
+                    .build();
         }).collect(Collectors.toList());
 
         Cafe cafe = cafeRepository.findById(request.getCafeId()).get();
@@ -103,11 +123,6 @@ public class ReviewServiceImpl implements ReviewService {
         // 로그인 된 사람만 통과 시키는 로직이 필요함
         String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         Member loginMember = memberRepository.findByEmail(currentMemberEmail).orElse(null);
-
-
-
-        // 이 로직은 DB와 통신을 너무 많이함, 순수 JPA에서 영속성 컨텍스트에 persist 해놓고 마지막에 commit() 으로  한번에 save 하는 방법을 고려 해야함
-        // ㄴ> 해결 중
 
         // 카페와 회원 정보를 가져옴
         Cafe cafe = cafeRepository.findById(request.getCafeId()).get();
