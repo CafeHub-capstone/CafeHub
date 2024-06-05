@@ -57,7 +57,11 @@ public class ReviewServiceImpl implements ReviewService {
         // 현재 로그인한 사용자의 이메일을 가져옴
         String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         // 현재 로그인한 사용자의 아이디를 가져옴
-        Long currentMemberId = memberRepository.findByEmail(currentMemberEmail).get().getId();
+        Member loginMember =  memberRepository.findByEmail(currentMemberEmail).orElse(null);
+        Long currentMemberId =null;
+        if(loginMember!=null) {
+            currentMemberId = loginMember.getId();
+        }
 
         Slice<Review> reviews = reviewRepository.findAllByCafeId(
                 PageRequest.of(request.getCurrentPage(), REVIEW_PAGING_SIZE, Sort.by(Sort.Direction.DESC, "createdAt")),
@@ -73,15 +77,20 @@ public class ReviewServiceImpl implements ReviewService {
         Map<Long, List<ReviewPhoto>> reviewPhotosMap = reviewPhotos.stream()
                 .collect(Collectors.groupingBy(reviewPhoto -> reviewPhoto.getReview().getId()));
 
-       // 현재 멤버가 좋아요한 리뷰 ID 리스트 생성.
-        List<Long> currentMemberLikeReviewIds = likeReviewRepository.findByMemberIdAndReviewIdIn(currentMemberId, reviewIds)
-                .stream()
-                .map(likeReview -> likeReview.getReview().getId())
-                .toList();
 
-        // 좋아요한 리뷰 ID를 Set으로 변환
-        Set<Long> likedReviewIdSet = new HashSet<>(currentMemberLikeReviewIds);
+        Set<Long> likedReviewIdSet;
+        if (loginMember!=null) {
+            // 현재 멤버가 좋아요한 리뷰 ID 리스트 생성.
+            List<Long> currentMemberLikeReviewIds = likeReviewRepository.findByMemberIdAndReviewIdIn(currentMemberId, reviewIds)
+                    .stream()
+                    .map(likeReview -> likeReview.getReview().getId())
+                    .toList();
 
+            // 좋아요한 리뷰 ID를 Set으로 변환
+            likedReviewIdSet = new HashSet<>(currentMemberLikeReviewIds);
+        } else {
+            likedReviewIdSet = Collections.emptySet();
+        }
         // 날짜 포맷터 설정
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -90,11 +99,12 @@ public class ReviewServiceImpl implements ReviewService {
             List<PhotoUrlResponse> photoUrls = reviewPhotosMap.getOrDefault(review.getId(), Collections.emptyList()).stream()
                     .map(reviewPhoto -> new PhotoUrlResponse(reviewPhoto.getReviewPhotoUrl()))
                     .collect(Collectors.toList());
-
-            // 사용자가 이 리뷰를 좋아요 했는지 확인
-            Boolean isliked = likedReviewIdSet.contains(review.getId()); //
+            Boolean isliked = null;
+            if (loginMember != null) {
+                // 사용자가 이 리뷰를 좋아요 했는지 확인
+                isliked = likedReviewIdSet.contains(review.getId());
 //            Boolean isliked = currentMemberLikeReviewIds.contains(review.getId());
-
+            }
             // 사용자가 이 리뷰를 작성했는지 확인
             boolean isReviewOwner = review.getMember().getEmail().equals(currentMemberEmail);
 
@@ -103,7 +113,7 @@ public class ReviewServiceImpl implements ReviewService {
                     .author(review.getMember().getNickname())
                     .reviewRating(review.getRating())
                     .reviewContent(review.getContent())
-                    .reviewCreateAt(LocalDateTime.parse(review.getCreatedAt().format(formatter))) // 날짜를 yyyy-MM-dd 형식으로 포맷
+                    .reviewCreateAt(review.getCreatedAt()) // 날짜를 yyyy-MM-dd 형식으로 포맷
                     .likeCnt(review.getLikeCount())
                     .likeChecked(isliked)
                     .commentCnt(review.getCommentCount())
