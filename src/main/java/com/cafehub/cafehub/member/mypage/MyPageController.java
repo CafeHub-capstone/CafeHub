@@ -36,10 +36,10 @@ public class MyPageController {
         return ResponseEntity.ok().body(myPageService.getMyComments(pageable, request));
     }
 
-//    @PostMapping("/api/auth/mypage")
-//    public ResponseEntity<?> changeProfile(HttpServletRequest request, @ModelAttribute @Validated ProfileRequestDto profileRequestDto) {
-//        return ResponseEntity.ok().body(myPageService.changeMyProfile(request, profileRequestDto));
-//    }
+    @PostMapping(value = "/api/auth/mypage", consumes = "multipart/form-data")
+    public ResponseEntity<?> changeProfile(HttpServletRequest request, @ModelAttribute @Validated ProfileRequestDto profileRequestDto) {
+        return ResponseEntity.ok().body(myPageService.changeMyProfile(request, profileRequestDto));
+    }
 
     @ExceptionHandler({SizeLimitExceededException.class, MaxUploadSizeExceededException.class})
     protected ResponseEntity<?> MaxUploadSizeExceededException(MaxUploadSizeExceededException e) {

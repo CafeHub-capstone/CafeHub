@@ -35,7 +35,7 @@ public class ReviewController {
     }
 
     // 리뷰 수정.
-    @PostMapping("/api/auth/cafe/{reviewId}/update")
+    @PostMapping(value = "/api/auth/cafe/{reviewId}/update", consumes = "multipart/form-data")
     public ReviewUpdateResponse updateReview(@PathVariable("reviewId") Long reviewId,
                                              @RequestBody ReviewUpdateRequest reviewUpdateRequest){
 

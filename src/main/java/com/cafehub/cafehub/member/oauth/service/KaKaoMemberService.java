@@ -30,6 +30,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -118,7 +119,7 @@ public class KaKaoMemberService {
         Member kakaoMember = memberRepository.findByEmail(kaKaoEmail).orElse(null);
 
         if (kakaoMember == null) {
-            String nickname = kaKaoMemberInfo.getNickname();
+            String nickname = kaKaoMemberInfo.getNickname() + UUID.randomUUID();
             kakaoMember = new Member(kaKaoEmail, nickname);
             memberRepository.save(kakaoMember);
         }

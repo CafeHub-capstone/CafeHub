@@ -22,6 +22,7 @@ import com.cafehub.cafehub.review.response.ReviewResponse;
 import com.cafehub.cafehub.reviewPhoto.entity.ReviewPhoto;
 import com.cafehub.cafehub.reviewPhoto.repository.ReviewPhotoRepository;
 import com.cafehub.cafehub.reviewPhoto.response.PhotoUrlResponse;
+import com.cafehub.cafehub.s3.S3Manager;
 import com.cafehub.cafehub.security.UserDetailsImpl;
 import com.cafehub.cafehub.security.jwt.JwtProvider;
 import com.cafehub.cafehub.security.jwt.RefreshTokenRepository;
@@ -47,14 +48,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class MyPageService {
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
+//    @Value("${cloud.aws.s3.bucket}")
+//    private String bucket;
 //    private final AmazonS3Client s3Client;
+
     private final JwtProvider jwtProvider;
     private final ReviewRepository reviewRepository;
     private final ReviewPhotoRepository reviewPhotoRepository;
     private final LikeReviewRepository likeReviewRepository;
     private final CommentRepository commentsRepository;
+    private final S3Manager s3Manager;
+
 
     public ResponseDto<?> getMyProfile(HttpServletRequest request) {
         Member member = getMemberFromJwt(request);
@@ -100,24 +104,42 @@ public class MyPageService {
         return ResponseDto.success(profileCommentsResponseDto);
     }
 
-//    public ResponseDto<?> changeMyProfile(HttpServletRequest request, ProfileRequestDto requestDto) {
-//        Member member = getMemberFromJwt(request);
-//        String nickname = requestDto.getNickname();
-//        Object profileImg = requestDto.getProfileImg();
+    public ResponseDto<?> changeMyProfile(HttpServletRequest request, ProfileRequestDto requestDto) {
+        Member member = getMemberFromJwt(request);
+        String nickname = requestDto.getNickname();
+        MultipartFile profileImg = requestDto.getProfileImg();
+
+        if (nickname != null) {
+            member.updateNickname(nickname);
+        }
+        if (profileImg != null) {
+//                String userPhotoUrl = uploadS3(profileImg, member);
+//                member.updateProfileImg(userPhotoUrl);
+
+            s3Manager.deleteFile(member.getUserPhotoKey());
+
+            String userPhotoKey = s3Manager.generateProfilePhotoKeyName();
+            String userPhotoUrl = s3Manager.uploadFile(userPhotoKey,profileImg);
+
+            member.updateProfileImg(userPhotoUrl,userPhotoKey);
 //        try {
 //            if (nickname != null) {
 //                member.updateNickname(nickname);
 //            }
 //            if (profileImg != null) {
-//                String userPhotoUrl = uploadS3((MultipartFile) profileImg, member);
-//                member.updateProfileImg(userPhotoUrl);
+////                String userPhotoUrl = uploadS3(profileImg, member);
+////                member.updateProfileImg(userPhotoUrl);
+//
+//                member.updateProfileImg(userPhotoUrl,userPhotoKey);
 //            }
 //            return ResponseDto.success("Profile Changed");
 //        } catch (IOException e) {
 //            log.error(e.getMessage());
 //            throw new FailedChangeProfile(ErrorCode.FAILED_CHANGE_PROFILE);
-//        }
-//    }
+        }
+
+        return ResponseDto.success("Profile Changed");
+    }
 
     private List<ReviewResponse> makeReviewResponse(List<Review> reviews) {
         List<ReviewResponse> responseDtoList = new ArrayList<>();
