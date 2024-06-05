@@ -6,6 +6,7 @@ import com.cafehub.cafehub.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
+
 @Entity
 @Getter
 @Builder
@@ -26,7 +27,4 @@ public class Bookmark extends Timestamped {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
-
-
-
 }
