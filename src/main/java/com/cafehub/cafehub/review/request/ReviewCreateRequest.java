@@ -1,6 +1,6 @@
 package com.cafehub.cafehub.review.request;
 
-import com.cafehub.cafehub.reviewPhoto.request.PhotoUrlRequest;
+import com.cafehub.cafehub.reviewPhoto.request.PhotoRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,7 @@ public class ReviewCreateRequest {
 
     private Integer reviewRating;
 
-    private List<PhotoUrlRequest> photoUrls;
+    private List<PhotoRequest> photos;
 
     private String reviewContent;
 }

@@ -4,12 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PhotoUrlRequest {
+public class PhotoRequest {
 
-    private String photoUrl;
+    private MultipartFile reviewPhoto;
 }
