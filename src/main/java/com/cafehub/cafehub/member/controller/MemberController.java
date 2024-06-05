@@ -24,20 +24,11 @@ public class MemberController {
     private final MemberService memberService;
     private final KaKaoMemberService kaKaoMemberService;
 
-    @GetMapping("/api/member/login")
-    public void kakaoLogin(HttpServletResponse response) throws IOException {
-        kaKaoMemberService.kakaoRedirct(response);
-    }
-
-    @GetMapping("/api/oauth")
+    @GetMapping("/api/member/login/kakao")
     public ResponseEntity<?> redirectKakaoLogin(@RequestParam("code") String code, HttpServletResponse response, HttpServletRequest request) throws URISyntaxException, JsonProcessingException {
         log.info("Received OAuth code: {}", code);
         kaKaoMemberService.kakaoLogin(code, response);
-        String redirectUri = request.getHeader("referer");
-        if (redirectUri == null || redirectUri.isEmpty()) {
-            redirectUri = "http://localhost:3000/";
-        }
-        return ResponseEntity.ok().location(new URI(redirectUri)).build();
+        return ResponseEntity.ok().body(ResponseDto.success("Kakao OAuth Success"));
     }
 
     @PostMapping("/api/auth/reissue")

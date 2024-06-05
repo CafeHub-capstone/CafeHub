@@ -23,6 +23,8 @@ public class Member extends Timestamped {
     @Lob
     private String userPhotoUrl;
 
+    private String userPhotoKey;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -35,8 +37,9 @@ public class Member extends Timestamped {
         this.nickname = nickname;
     }
 
-    public void updateProfileImg(String profileImg) {
-        this.userPhotoUrl = profileImg;
+    public void updateProfileImg(String profileImgUrl, String profileImgKey) {
+        this.userPhotoUrl = profileImgUrl;
+        this.userPhotoKey = profileImgKey;
     }
 
 

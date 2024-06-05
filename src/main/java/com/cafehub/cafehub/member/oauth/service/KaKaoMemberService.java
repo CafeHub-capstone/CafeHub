@@ -30,6 +30,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -45,14 +46,6 @@ public class KaKaoMemberService {
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
-
-    public void kakaoRedirct(HttpServletResponse response) throws IOException {
-        String encodeRedirectUrl = URLEncoder.encode(kakaoRedirectUrl, StandardCharsets.UTF_8);
-        String redirectUrl = "https://kauth.kakao.com/oauth/authorize?client_id="
-                + kakaoKey + "&redirect_uri=" + encodeRedirectUrl + "&response_type=code";
-       log.info("Redirection to: {}", redirectUrl);
-       response.sendRedirect(redirectUrl);
-    }
 
     public void kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
 
@@ -126,7 +119,7 @@ public class KaKaoMemberService {
         Member kakaoMember = memberRepository.findByEmail(kaKaoEmail).orElse(null);
 
         if (kakaoMember == null) {
-            String nickname = kaKaoMemberInfo.getNickname();
+            String nickname = kaKaoMemberInfo.getNickname() + UUID.randomUUID();
             kakaoMember = new Member(kaKaoEmail, nickname);
             memberRepository.save(kakaoMember);
         }

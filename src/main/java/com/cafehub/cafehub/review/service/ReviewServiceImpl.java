@@ -2,6 +2,7 @@ package com.cafehub.cafehub.review.service;
 
 import com.cafehub.cafehub.cafe.entity.Cafe;
 import com.cafehub.cafehub.cafe.repository.CafeRepository;
+import com.cafehub.cafehub.likeReview.repository.LikeReviewRepository;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.member.repository.MemberRepository;
 import com.cafehub.cafehub.review.entity.Review;
@@ -10,8 +11,9 @@ import com.cafehub.cafehub.review.request.*;
 import com.cafehub.cafehub.review.response.*;
 import com.cafehub.cafehub.reviewPhoto.entity.ReviewPhoto;
 import com.cafehub.cafehub.reviewPhoto.repository.ReviewPhotoRepository;
-import com.cafehub.cafehub.reviewPhoto.request.PhotoUrlRequest;
+import com.cafehub.cafehub.reviewPhoto.request.PhotoRequest;
 import com.cafehub.cafehub.reviewPhoto.response.PhotoUrlResponse;
+import com.cafehub.cafehub.s3.S3Manager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -23,11 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,10 +47,21 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewPhotoRepository reviewPhotoRepository;
 
+    private final LikeReviewRepository likeReviewRepository;
+
+    private final S3Manager s3Manager;
+
     @Override
     public AllReviewGetResponse getAllReviewOfCafe(AllReviewGetRequest request) {
-        // 리뷰들을 슬라이스해서 넘겨주는 게 목표.
-        // 로그인 관련해서 수정이필요함
+
+        // 현재 로그인한 사용자의 이메일을 가져옴
+        String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        // 현재 로그인한 사용자의 아이디를 가져옴
+        Member loginMember =  memberRepository.findByEmail(currentMemberEmail).orElse(null);
+        Long currentMemberId =null;
+        if(loginMember!=null) {
+            currentMemberId = loginMember.getId();
+        }
 
         Slice<Review> reviews = reviewRepository.findAllByCafeId(
                 PageRequest.of(request.getCurrentPage(), REVIEW_PAGING_SIZE, Sort.by(Sort.Direction.DESC, "createdAt")),
@@ -66,28 +77,49 @@ public class ReviewServiceImpl implements ReviewService {
         Map<Long, List<ReviewPhoto>> reviewPhotosMap = reviewPhotos.stream()
                 .collect(Collectors.groupingBy(reviewPhoto -> reviewPhoto.getReview().getId()));
 
+
+        Set<Long> likedReviewIdSet;
+        if (loginMember!=null) {
+            // 현재 멤버가 좋아요한 리뷰 ID 리스트 생성.
+            List<Long> currentMemberLikeReviewIds = likeReviewRepository.findByMemberIdAndReviewIdIn(currentMemberId, reviewIds)
+                    .stream()
+                    .map(likeReview -> likeReview.getReview().getId())
+                    .toList();
+
+            // 좋아요한 리뷰 ID를 Set으로 변환
+            likedReviewIdSet = new HashSet<>(currentMemberLikeReviewIds);
+        } else {
+            likedReviewIdSet = Collections.emptySet();
+        }
         // 날짜 포맷터 설정
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         // 리뷰 리스트 생성.
         List<ReviewResponse> reviewList = reviews.stream().map(review -> {
-            // List<PhotoUrlResponse> photoUrls = reviewPhotoRepository.findAllByReviewId(review.getId()).stream()
             List<PhotoUrlResponse> photoUrls = reviewPhotosMap.getOrDefault(review.getId(), Collections.emptyList()).stream()
                     .map(reviewPhoto -> new PhotoUrlResponse(reviewPhoto.getReviewPhotoUrl()))
                     .collect(Collectors.toList());
+            Boolean isliked = null;
+            if (loginMember != null) {
+                // 사용자가 이 리뷰를 좋아요 했는지 확인
+                isliked = likedReviewIdSet.contains(review.getId());
+//            Boolean isliked = currentMemberLikeReviewIds.contains(review.getId());
+            }
+            // 사용자가 이 리뷰를 작성했는지 확인
+            boolean isReviewOwner = review.getMember().getEmail().equals(currentMemberEmail);
 
-            return new ReviewResponse(
-                    review.getId(),
-                    review.getMember().getNickname(),
-                    review.getRating(),
-                    review.getContent(),
-                    review.getCreatedAt(), // 날짜를 yyyy-MM-dd 형식으로 포맷
-                    review.getLikeCount(),
-                    false, // 로그인 구현 전이라 좋아요 눌렀는지는 false처리
-                    review.getCommentCount(),
-                    photoUrls,
-                    false // 로그인 미구현으로 리뷰 관리 false
-            );
+            return ReviewResponse.builder()
+                    .reviewId(review.getId())
+                    .author(review.getMember().getNickname())
+                    .reviewRating(review.getRating())
+                    .reviewContent(review.getContent())
+                    .reviewCreateAt(review.getCreatedAt()) // 날짜를 yyyy-MM-dd 형식으로 포맷
+                    .likeCnt(review.getLikeCount())
+                    .likeChecked(isliked)
+                    .commentCnt(review.getCommentCount())
+                    .photoUrls(photoUrls)
+                    .reviewManagement(isReviewOwner) // 로그인 미구현으로 리뷰 관리 false
+                    .build();
         }).collect(Collectors.toList());
 
         Cafe cafe = cafeRepository.findById(request.getCafeId()).get();
@@ -104,11 +136,6 @@ public class ReviewServiceImpl implements ReviewService {
         String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         Member loginMember = memberRepository.findByEmail(currentMemberEmail).orElse(null);
 
-
-
-        // 이 로직은 DB와 통신을 너무 많이함, 순수 JPA에서 영속성 컨텍스트에 persist 해놓고 마지막에 commit() 으로  한번에 save 하는 방법을 고려 해야함
-        // ㄴ> 해결 중
-
         // 카페와 회원 정보를 가져옴
         Cafe cafe = cafeRepository.findById(request.getCafeId()).get();
 
@@ -123,9 +150,15 @@ public class ReviewServiceImpl implements ReviewService {
         reviewRepository.save(review);
 
         List<ReviewPhoto> reviewPhotos = new ArrayList<>();
-        for(PhotoUrlRequest photoUrlRequest : request.getPhotoUrls()){
+        for(PhotoRequest photoRequest : request.getPhotos()){
+
+            String reviewPhotoKey = s3Manager.generateReviewPhotoKeyName();
+            String reviewPhothourl = s3Manager.uploadFile(reviewPhotoKey, photoRequest.getReviewPhoto());
+
+
             ReviewPhoto reviewPhoto = ReviewPhoto.builder()
-                    .reviewPhotoUrl(photoUrlRequest.getPhotoUrl())
+                    .reviewPhotoUrl(reviewPhothourl)
+                    .reviewPhotoKey(reviewPhotoKey)
                     .review(review)
                     .build();
             reviewPhotos.add(reviewPhoto); // 매번 DB에 담지 않고, 우선 List에 담기.
@@ -171,13 +204,24 @@ public class ReviewServiceImpl implements ReviewService {
         prevCafe.updateReviewCount(prevCafe.getReviews().size());
         // 카페 저장은 영속성 컨텍스트에 포함되어 있으므로 별도의 save 호출 불필요
 
-        // 아마존 S3 관련해서 다 바뀔 코드
+        // S3는 DB IN 처럼 한번에 업로드 하는 방법이 없는거 같음
+        List<ReviewPhoto> reviewPhotoList = reviewPhotoRepository.findAllByReviewId(request.getReviewId());
+        for(ReviewPhoto reviewPhoto : reviewPhotoList){
+            s3Manager.deleteFile(reviewPhoto.getReviewPhotoKey());
+        }
         reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
+
+
         // 새로운 리뷰 사진들을 리스트에 담음
         List<ReviewPhoto> reviewPhotos = new ArrayList<>();
-        for (PhotoUrlRequest photoUrlRequest : request.getPhotoUrls()) {
+        for (PhotoRequest photoRequest : request.getPhotos()) {
+
+            String reviewPhotoKey = s3Manager.generateReviewPhotoKeyName();
+            String reviewPhothourl = s3Manager.uploadFile(reviewPhotoKey, photoRequest.getReviewPhoto());
+
             ReviewPhoto reviewPhoto = ReviewPhoto.builder()
-                    .reviewPhotoUrl(photoUrlRequest.getPhotoUrl())
+                    .reviewPhotoUrl(reviewPhothourl)
+                    .reviewPhotoKey(reviewPhotoKey)
                     .review(prevReview) // 기존 리뷰 객체를 사용
                     .build();
             reviewPhotos.add(reviewPhoto);
@@ -195,6 +239,11 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewRepository.findById(request.getReviewId()).get();
 
         // 리뷰 사진 삭제 - cascade가 아니므로 직접 해줘야 함.
+        List<ReviewPhoto> reviewPhotoList = reviewPhotoRepository.findAllByReviewId(request.getReviewId());
+        for(ReviewPhoto reviewPhoto : reviewPhotoList){
+            s3Manager.deleteFile(reviewPhoto.getReviewPhotoKey());
+        }
+
         reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
 
         // 리뷰 삭제.

@@ -20,6 +20,8 @@ public class ReviewPhoto extends Timestamped {
     @Lob
     private String reviewPhotoUrl;
 
+    private String reviewPhotoKey;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")

@@ -21,6 +21,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,6 +46,9 @@ public class CommentServiceImpl implements CommentService{
 
         String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
+        // 날짜 포맷터 설정
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
         // 슬라이스 처리를 위해 슬라이스 생성.
         Slice<Comment> commentSlice = commentRepository.findAllByReviewIdWithMember(request.getReviewId(),
                 PageRequest.of(request.getCurrentPage(), COMMENT_PAGING_SIZE, Sort.by(Sort.Direction.DESC, "createdAt")));
@@ -53,7 +58,7 @@ public class CommentServiceImpl implements CommentService{
                     .commentId(comment.getId())
                     .nickname(comment.getMember().getNickname())
                     .commentContent(comment.getContent())
-                    .commentDate(comment.getCreatedAt())
+                    .commentDate(LocalDateTime.parse(comment.getCreatedAt().format(formatter)))
                     .commentManagement(comment.getMember().getEmail().equals(currentMemberEmail))
                     .build();
         }).collect(Collectors.toList());
