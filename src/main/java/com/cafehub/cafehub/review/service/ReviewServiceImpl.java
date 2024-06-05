@@ -2,7 +2,6 @@ package com.cafehub.cafehub.review.service;
 
 import com.cafehub.cafehub.cafe.entity.Cafe;
 import com.cafehub.cafehub.cafe.repository.CafeRepository;
-import com.cafehub.cafehub.likeReview.entity.LikeReview;
 import com.cafehub.cafehub.likeReview.repository.LikeReviewRepository;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.member.repository.MemberRepository;
@@ -12,8 +11,9 @@ import com.cafehub.cafehub.review.request.*;
 import com.cafehub.cafehub.review.response.*;
 import com.cafehub.cafehub.reviewPhoto.entity.ReviewPhoto;
 import com.cafehub.cafehub.reviewPhoto.repository.ReviewPhotoRepository;
-import com.cafehub.cafehub.reviewPhoto.request.PhotoUrlRequest;
+import com.cafehub.cafehub.reviewPhoto.request.PhotoRequest;
 import com.cafehub.cafehub.reviewPhoto.response.PhotoUrlResponse;
+import com.cafehub.cafehub.s3.S3Manager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -49,6 +49,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final LikeReviewRepository likeReviewRepository;
 
+    private final S3Manager s3Manager;
+
     @Override
     public AllReviewGetResponse getAllReviewOfCafe(AllReviewGetRequest request) {
 
@@ -75,7 +77,7 @@ public class ReviewServiceImpl implements ReviewService {
         List<Long> currentMemberLikeReviewIds = likeReviewRepository.findByMemberIdAndReviewIdIn(currentMemberId, reviewIds)
                 .stream()
                 .map(likeReview -> likeReview.getReview().getId())
-                .collect(Collectors.toList());
+                .toList();
 
         // 좋아요한 리뷰 ID를 Set으로 변환
         Set<Long> likedReviewIdSet = new HashSet<>(currentMemberLikeReviewIds);
@@ -138,9 +140,15 @@ public class ReviewServiceImpl implements ReviewService {
         reviewRepository.save(review);
 
         List<ReviewPhoto> reviewPhotos = new ArrayList<>();
-        for(PhotoUrlRequest photoUrlRequest : request.getPhotoUrls()){
+        for(PhotoRequest photoRequest : request.getPhotos()){
+
+            String reviewPhotoKey = s3Manager.generateReviewPhotoKeyName();
+            String reviewPhothourl = s3Manager.uploadFile(reviewPhotoKey, photoRequest.getReviewPhoto());
+
+
             ReviewPhoto reviewPhoto = ReviewPhoto.builder()
-                    .reviewPhotoUrl(photoUrlRequest.getPhotoUrl())
+                    .reviewPhotoUrl(reviewPhothourl)
+                    .reviewPhotoKey(reviewPhotoKey)
                     .review(review)
                     .build();
             reviewPhotos.add(reviewPhoto); // 매번 DB에 담지 않고, 우선 List에 담기.
@@ -186,13 +194,24 @@ public class ReviewServiceImpl implements ReviewService {
         prevCafe.updateReviewCount(prevCafe.getReviews().size());
         // 카페 저장은 영속성 컨텍스트에 포함되어 있으므로 별도의 save 호출 불필요
 
-        // 아마존 S3 관련해서 다 바뀔 코드
+        // S3는 DB IN 처럼 한번에 업로드 하는 방법이 없는거 같음
+        List<ReviewPhoto> reviewPhotoList = reviewPhotoRepository.findAllByReviewId(request.getReviewId());
+        for(ReviewPhoto reviewPhoto : reviewPhotoList){
+            s3Manager.deleteFile(reviewPhoto.getReviewPhotoKey());
+        }
         reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
+
+
         // 새로운 리뷰 사진들을 리스트에 담음
         List<ReviewPhoto> reviewPhotos = new ArrayList<>();
-        for (PhotoUrlRequest photoUrlRequest : request.getPhotoUrls()) {
+        for (PhotoRequest photoRequest : request.getPhotos()) {
+
+            String reviewPhotoKey = s3Manager.generateReviewPhotoKeyName();
+            String reviewPhothourl = s3Manager.uploadFile(reviewPhotoKey, photoRequest.getReviewPhoto());
+
             ReviewPhoto reviewPhoto = ReviewPhoto.builder()
-                    .reviewPhotoUrl(photoUrlRequest.getPhotoUrl())
+                    .reviewPhotoUrl(reviewPhothourl)
+                    .reviewPhotoKey(reviewPhotoKey)
                     .review(prevReview) // 기존 리뷰 객체를 사용
                     .build();
             reviewPhotos.add(reviewPhoto);
@@ -210,6 +229,11 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewRepository.findById(request.getReviewId()).get();
 
         // 리뷰 사진 삭제 - cascade가 아니므로 직접 해줘야 함.
+        List<ReviewPhoto> reviewPhotoList = reviewPhotoRepository.findAllByReviewId(request.getReviewId());
+        for(ReviewPhoto reviewPhoto : reviewPhotoList){
+            s3Manager.deleteFile(reviewPhoto.getReviewPhotoKey());
+        }
+
         reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
 
         // 리뷰 삭제.
