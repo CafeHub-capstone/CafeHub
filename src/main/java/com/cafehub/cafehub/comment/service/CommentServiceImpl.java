@@ -27,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -58,14 +60,21 @@ public class CommentServiceImpl implements CommentService{
         Slice<Comment> commentSlice = commentRepository.findAllByReviewIdWithMember(request.getReviewId(),
                 PageRequest.of(request.getCurrentPage(), COMMENT_PAGING_SIZE, Sort.by(Sort.Direction.DESC, "createdAt")));
 
+        List<Long> commentIds = commentSlice.getContent().stream().map(Comment::getId).collect(Collectors.toList());
+        List<Member> members = memberRepository.findAllByCommentIdIn(commentIds);
+
+        Map<Long, Member> memberMap = members.stream()
+                .collect(Collectors.toMap(Member::getId, member -> member));
+
         List<CommentResponseDTO> comments;
 
         if (loginMember ==null){
 
             comments = commentSlice.getContent().stream().map(comment -> {
+                Member member = memberMap.get(comment.getMember().getId());
                 return CommentResponseDTO.builder()
                         .commentId(comment.getId())
-                        .nickname(comment.getMember().getNickname())
+                        .nickname(member.getNickname())
                         .commentContent(comment.getContent())
                         .commentDate(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
                         .commentManagement(false)
@@ -74,12 +83,13 @@ public class CommentServiceImpl implements CommentService{
         }
         else {
             comments = commentSlice.getContent().stream().map(comment -> {
+                Member member = memberMap.get(comment.getMember().getId());
                 return CommentResponseDTO.builder()
                         .commentId(comment.getId())
-                        .nickname(comment.getMember().getNickname())
+                        .nickname(member.getNickname())
                         .commentContent(comment.getContent())
                         .commentDate(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
-                        .commentManagement(comment.getMember().equals(loginMember))     // 성능 개선 필요
+                        .commentManagement(member.equals(loginMember))     // 성능 개선 필요.
                         .build();
             }).toList();
         }
