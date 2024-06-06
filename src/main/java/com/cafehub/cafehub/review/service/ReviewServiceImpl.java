@@ -2,6 +2,8 @@ package com.cafehub.cafehub.review.service;
 
 import com.cafehub.cafehub.cafe.entity.Cafe;
 import com.cafehub.cafehub.cafe.repository.CafeRepository;
+import com.cafehub.cafehub.comment.entity.Comment;
+import com.cafehub.cafehub.comment.repository.CommentRepository;
 import com.cafehub.cafehub.likeReview.repository.LikeReviewRepository;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.member.repository.MemberRepository;
@@ -47,6 +49,8 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewPhotoRepository reviewPhotoRepository;
 
     private final LikeReviewRepository likeReviewRepository;
+
+    private final CommentRepository commentRepository;
 
     private final S3Manager s3Manager;
 
@@ -249,12 +253,22 @@ public class ReviewServiceImpl implements ReviewService {
         // 리뷰 사진 삭제 - cascade가 아니므로 직접 해줘야 함.
         List<ReviewPhoto> reviewPhotoList = reviewPhotoRepository.findAllByReviewId(request.getReviewId());
 
-        if(reviewPhotoList!=null || !reviewPhotoList.isEmpty()) {
+        if(reviewPhotoList!=null) {
             for (ReviewPhoto reviewPhoto : reviewPhotoList) {
                 s3Manager.deleteFile(reviewPhoto.getReviewPhotoKey());
             }
             reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
         }
+
+        // 리뷰의 댓글 삭제
+
+        List<Comment> reviewCommentList = commentRepository.findAllByReviewId(request.getReviewId());
+
+
+        if (reviewCommentList != null) {
+            commentRepository.deleteAllByReviewId(request.getReviewId());
+        }
+
 
         // 리뷰 삭제.
         reviewRepository.delete(review);
