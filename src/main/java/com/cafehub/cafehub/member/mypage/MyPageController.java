@@ -40,7 +40,7 @@ public class MyPageController {
     @PostMapping(value = "/api/auth/mypage", consumes = {"multipart/form-data"})
     public ResponseEntity<?> changeProfile(HttpServletRequest request,
                                            @RequestPart ("nickname") ProfileRequestDto profileRequestDto,
-                                           @RequestPart ("profileImg") MultipartFile photo) {
+                                           @RequestPart (value = "profileImg", required = false) MultipartFile photo) {
 
         return ResponseEntity.ok().body(myPageService.changeMyProfile(request, profileRequestDto,photo));
     }
