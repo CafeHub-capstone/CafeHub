@@ -263,15 +263,15 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 리뷰의 댓글 삭제
 
-//        List<Comment> reviewCommentList = commentRepository.findAllByReviewId(request.getReviewId());
+        List<Comment> reviewCommentList = commentRepository.findAllByReviewId(request.getReviewId());
 
 
-//        if (reviewCommentList != null) {
+        if (reviewCommentList != null) {
             commentRepository.deleteAllByReviewId(request.getReviewId());
-//        }
+        }
 
 //        List<LikeReview> likeReviewList = likeReviewRepository.finAllByReviewId(request.getReviewId());
-
+//
 //        if(likeReviewList != null){
             likeReviewRepository.deleteAllByReviewId(request.getReviewId());
 //        }
