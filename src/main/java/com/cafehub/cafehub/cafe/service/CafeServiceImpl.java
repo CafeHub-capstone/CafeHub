@@ -170,7 +170,7 @@ public class CafeServiceImpl implements CafeService{
                             .author(review.getMember().getNickname())
                             .reviewRating(review.getRating())
                             .reviewContent(review.getContent())
-                            .createdAt(review.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
+                            .reviewCreateAt(review.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
                             .likeCnt(review.getLikeCount())
                             .commentCnt(review.getCommentCount())
                             .likeChecked(likedReviewIds.contains(review.getId()))
