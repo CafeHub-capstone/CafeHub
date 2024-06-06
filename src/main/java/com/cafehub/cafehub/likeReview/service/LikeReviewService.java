@@ -41,7 +41,7 @@ public class LikeReviewService {
         /**
          * 리뷰 좋아요 등록
          */
-        if (like.isEmpty() && likeReviewRequestDto.getReviewChecked()) {
+        if (like.isEmpty() && likeReviewRequestDto.getReviewLike()) {
             LikeReview likeReview = LikeReview.builder()
                     .review(review)
                     .member(member)
@@ -50,7 +50,7 @@ public class LikeReviewService {
             review.updateLikeCount(review.getLikeCount()+1);
 
             likeReviewRepository.save(likeReview);
-        } else if (like.isPresent() && !likeReviewRequestDto.getReviewChecked()){
+        } else if (like.isPresent() && !likeReviewRequestDto.getReviewLike()){
             review.updateLikeCount(review.getLikeCount()-1);
             likeReviewRepository.delete(like.get());
         }

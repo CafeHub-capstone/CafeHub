@@ -10,5 +10,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class LikeReviewRequestDto {
-    private Boolean reviewChecked;
+    private Boolean reviewLike;
 }
