@@ -172,7 +172,7 @@ public class CafeServiceImpl implements CafeService{
                             .reviewDate(review.getCreatedAt())
                             .likeCnt(review.getLikeCount())
                             .commentCnt(review.getCommentCount())
-                            .reviewChecked(likedReviewIds.contains(review.getId()))
+                            .likeChecked(likedReviewIds.contains(review.getId()))
                             .photoUrls(photoUrlResponseList)
                             .build();
                 })

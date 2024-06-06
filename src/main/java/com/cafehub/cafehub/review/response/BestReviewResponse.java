@@ -27,7 +27,7 @@ public class BestReviewResponse {
 
     private Integer commentCnt;
 
-    private Boolean reviewChecked;
+    private Boolean likeChecked;;
 
     private List<PhotoUrlResponse> photoUrls;
 

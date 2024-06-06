@@ -105,8 +105,6 @@ public class MyPageService {
             member.updateNickname(nickname);
         }
         if (photo != null) {
-//                String userPhotoUrl = uploadS3(profileImg, member);
-//                member.updateProfileImg(userPhotoUrl);
 
             String photoKey = member.getUserPhotoKey();
             System.out.println(photoKey);
@@ -118,20 +116,7 @@ public class MyPageService {
             String userPhotoUrl = s3Manager.uploadFile(userPhotoKey,photo);
 
             member.updateProfileImg(userPhotoUrl,userPhotoKey);
-//        try {
-//            if (nickname != null) {
-//                member.updateNickname(nickname);
-//            }
-//            if (profileImg != null) {
-////                String userPhotoUrl = uploadS3(profileImg, member);
-////                member.updateProfileImg(userPhotoUrl);
-//
-//                member.updateProfileImg(userPhotoUrl,userPhotoKey);
-//            }
-//            return ResponseDto.success("Profile Changed");
-//        } catch (IOException e) {
-//            log.error(e.getMessage());
-//            throw new FailedChangeProfile(ErrorCode.FAILED_CHANGE_PROFILE);
+
         }
 
         return ResponseDto.success("Profile Changed");
