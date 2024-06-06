@@ -55,6 +55,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 현재 로그인한 사용자의 이메일을 가져옴
         String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println(currentMemberEmail);
         // 현재 로그인한 사용자의 아이디를 가져옴
         Member loginMember =  memberRepository.findByEmail(currentMemberEmail).orElse(null);
         Long currentMemberId =null;
