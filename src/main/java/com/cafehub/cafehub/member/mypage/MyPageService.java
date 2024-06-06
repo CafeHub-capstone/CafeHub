@@ -97,6 +97,7 @@ public class MyPageService {
     public ResponseDto<?> changeMyProfile(HttpServletRequest request, ProfileRequestDto requestDto, MultipartFile photo) {
         Member member = getMemberFromJwt(request);
         String nickname = requestDto.getNickname();
+        System.out.println("포토 들어옴? : " + photo.isEmpty());
 
 
         if (nickname != null) {
