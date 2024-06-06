@@ -21,7 +21,7 @@ public class BestReviewResponse {
 
     private String reviewContent;
 
-    private LocalDateTime reviewDate;
+    private String createdAt;
 
     private Integer likeCnt;
 

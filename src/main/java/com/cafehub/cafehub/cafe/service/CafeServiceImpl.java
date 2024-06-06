@@ -34,6 +34,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -169,7 +170,7 @@ public class CafeServiceImpl implements CafeService{
                             .author(review.getMember().getNickname())
                             .reviewRating(review.getRating())
                             .reviewContent(review.getContent())
-                            .reviewDate(review.getCreatedAt())
+                            .createdAt(review.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
                             .likeCnt(review.getLikeCount())
                             .commentCnt(review.getCommentCount())
                             .likeChecked(likedReviewIds.contains(review.getId()))
