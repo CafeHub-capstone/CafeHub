@@ -96,8 +96,7 @@ public class ReviewServiceImpl implements ReviewService {
         } else {
             likedReviewIdSet = Collections.emptySet();
         }
-        // 날짜 포맷터 설정
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
 
         // 리뷰 리스트 생성.
         List<ReviewResponse> reviewList = reviews.stream().map(review -> {
