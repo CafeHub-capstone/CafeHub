@@ -7,6 +7,7 @@ import com.cafehub.cafehub.member.exception.ExpiredJwtToken;
 import com.cafehub.cafehub.member.exception.InvalidToken;
 import com.cafehub.cafehub.member.exception.NotFoundToken;
 import com.cafehub.cafehub.member.exception.NotMatchToken;
+import com.cafehub.cafehub.member.repository.MemberRepository;
 import com.cafehub.cafehub.security.UserDetailsImpl;
 import com.cafehub.cafehub.security.jwt.JwtProvider;
 import com.cafehub.cafehub.security.jwt.RefreshToken;
@@ -26,6 +27,7 @@ public class MemberService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
+    private final MemberRepository memberRepository;
 
     /**
      * JWT를 재발급하는 메서드
@@ -89,8 +91,15 @@ public class MemberService {
     }
 
     public ResponseDto<?> logout() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        refreshTokenRepository.deleteById(userDetails.getMember().getEmail());
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        refreshTokenRepository.deleteById(userDetails.getMember().getEmail());
+        String loginMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Member member = memberRepository.findByEmail(loginMemberEmail).orElse(null);
+
+        if(member != null){
+            refreshTokenRepository.deleteById(member.getEmail());
+        }
+
         return ResponseDto.success("logout success");
     }
 
