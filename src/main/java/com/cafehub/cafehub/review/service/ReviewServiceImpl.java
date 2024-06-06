@@ -118,7 +118,7 @@ public class ReviewServiceImpl implements ReviewService {
                     .author(review.getMember().getNickname())
                     .reviewRating(review.getRating())
                     .reviewContent(review.getContent())
-                    .reviewCreateAt(review.getCreatedAt()) // 날짜를 yyyy-MM-dd 형식으로 포맷
+                    .reviewCreateAt(review.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))) // 날짜를 yyyy-MM-dd 형식으로 포맷
                     .likeCnt(review.getLikeCount())
                     .likeChecked(isliked)
                     .commentCnt(review.getCommentCount())
@@ -263,12 +263,8 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 리뷰의 댓글 삭제
 
-        List<Comment> reviewCommentList = commentRepository.findAllByReviewId(request.getReviewId());
-
-
-        if (reviewCommentList != null) {
             commentRepository.deleteAllByReviewId(request.getReviewId());
-        }
+
 
 //        List<LikeReview> likeReviewList = likeReviewRepository.finAllByReviewId(request.getReviewId());
 //
