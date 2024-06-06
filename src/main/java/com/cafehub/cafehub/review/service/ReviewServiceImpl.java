@@ -188,7 +188,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public ReviewUpdateResponse updateReview(ReviewUpdateRequest request){
+    public ReviewUpdateResponse updateReview(ReviewUpdateRequest request, List<MultipartFile> photos){
 
         Review prevReview = reviewRepository.findById(request.getReviewId()).get();
 
@@ -213,23 +213,25 @@ public class ReviewServiceImpl implements ReviewService {
         reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
 
 
+
         // 새로운 리뷰 사진들을 리스트에 담음
         List<ReviewPhoto> reviewPhotos = new ArrayList<>();
-        for (PhotoRequest photoRequest : request.getPhotos()) {
+        if (photos != null) {
+            for (MultipartFile photoRequest : photos) {
 
-            String reviewPhotoKey = s3Manager.generateReviewPhotoKeyName();
-            String reviewPhothourl = s3Manager.uploadFile(reviewPhotoKey, (MultipartFile) photoRequest.getReviewPhoto());
+                String reviewPhotoKey = s3Manager.generateReviewPhotoKeyName();
+                String reviewPhothourl = s3Manager.uploadFile(reviewPhotoKey, photoRequest);
 
-            ReviewPhoto reviewPhoto = ReviewPhoto.builder()
-                    .reviewPhotoUrl(reviewPhothourl)
-                    .reviewPhotoKey(reviewPhotoKey)
-                    .review(prevReview) // 기존 리뷰 객체를 사용
-                    .build();
-            reviewPhotos.add(reviewPhoto);
+                ReviewPhoto reviewPhoto = ReviewPhoto.builder()
+                        .reviewPhotoUrl(reviewPhothourl)
+                        .reviewPhotoKey(reviewPhotoKey)
+                        .review(prevReview) // 기존 리뷰 객체를 사용
+                        .build();
+                reviewPhotos.add(reviewPhoto);
+            }
+            // 리뷰 사진들을 한 번에 저장
+            reviewPhotoRepository.saveAll(reviewPhotos);
         }
-        // 리뷰 사진들을 한 번에 저장
-        reviewPhotoRepository.saveAll(reviewPhotos);
-
         return new ReviewUpdateResponse(true, prevReview.getId(),"ok");
     }
 

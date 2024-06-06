@@ -33,7 +33,7 @@ public class ReviewController {
     @PostMapping(value = "/api/auth/cafe/{cafeId}/review", consumes = {"multipart/form-data"})
     public ReviewCreateResponse createReview(
             @PathVariable("cafeId") Long cafeId,
-            @RequestPart("request") ReviewCreateRequest request,
+            @RequestPart("ReviewCreateRequest") ReviewCreateRequest request,
             @RequestPart(value = "photos", required = false) List<MultipartFile> photos) {
 
         request.setCafeId(cafeId);
@@ -46,11 +46,12 @@ public class ReviewController {
     // 리뷰 수정.
     @PostMapping(value = "/api/auth/cafe/{reviewId}/update", consumes = {"multipart/form-data"})
     public ReviewUpdateResponse updateReview(@PathVariable("reviewId") Long reviewId,
-                                             @RequestBody ReviewUpdateRequest reviewUpdateRequest){
+                                             @RequestPart("request")  ReviewUpdateRequest reviewUpdateRequest,
+                                             @RequestPart(value = "photos", required = false) List<MultipartFile> photos){
 
         reviewUpdateRequest.setReviewId(reviewId);
 
-        return reviewService.updateReview(reviewUpdateRequest);
+        return reviewService.updateReview(reviewUpdateRequest,photos);
     }
 
     // 리뷰 삭제.

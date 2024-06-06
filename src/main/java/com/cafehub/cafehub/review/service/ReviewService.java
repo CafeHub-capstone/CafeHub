@@ -15,7 +15,7 @@ public interface ReviewService {
     ReviewCreateResponse writeReview(ReviewCreateRequest reviewCreateRequest, List<MultipartFile> photos);
 
     @Transactional
-    ReviewUpdateResponse updateReview(ReviewUpdateRequest reviewUpdateRequest);
+    ReviewUpdateResponse updateReview(ReviewUpdateRequest reviewUpdateRequest, List<MultipartFile> photos);
 
     @Transactional
     ReviewDeleteResponse deleteReview(ReviewDeleteRequest reviewDeleteRequest);
