@@ -1,6 +1,5 @@
 package com.cafehub.cafehub.review.request;
 
-import com.cafehub.cafehub.reviewPhoto.request.PhotoRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
