@@ -11,7 +11,6 @@ import com.cafehub.cafehub.review.request.*;
 import com.cafehub.cafehub.review.response.*;
 import com.cafehub.cafehub.reviewPhoto.entity.ReviewPhoto;
 import com.cafehub.cafehub.reviewPhoto.repository.ReviewPhotoRepository;
-import com.cafehub.cafehub.reviewPhoto.request.PhotoRequest;
 import com.cafehub.cafehub.reviewPhoto.response.PhotoUrlResponse;
 import com.cafehub.cafehub.s3.S3Manager;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +21,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,6 +55,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 현재 로그인한 사용자의 이메일을 가져옴
         String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println(currentMemberEmail);
         // 현재 로그인한 사용자의 아이디를 가져옴
         Member loginMember =  memberRepository.findByEmail(currentMemberEmail).orElse(null);
         Long currentMemberId =null;
@@ -129,7 +129,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public ReviewCreateResponse writeReview(ReviewCreateRequest request){
+    public ReviewCreateResponse writeReview(ReviewCreateRequest request, List<MultipartFile> photos){
         // 이미 리뷰를 작성한 사람은 리뷰 작성 못하게 기능 추가해야함.
 
         // 로그인 된 사람만 통과 시키는 로직이 필요함
@@ -150,22 +150,24 @@ public class ReviewServiceImpl implements ReviewService {
         reviewRepository.save(review);
 
         List<ReviewPhoto> reviewPhotos = new ArrayList<>();
-        for(PhotoRequest photoRequest : request.getPhotos()){
 
-            String reviewPhotoKey = s3Manager.generateReviewPhotoKeyName();
-            String reviewPhothourl = s3Manager.uploadFile(reviewPhotoKey, photoRequest.getReviewPhoto());
+        if (photos!=null) {
+            for (MultipartFile photoRequest : photos) {
+
+                String reviewPhotoKey = s3Manager.generateReviewPhotoKeyName();
+                String reviewPhothourl = s3Manager.uploadFile(reviewPhotoKey, photoRequest);
 
 
-            ReviewPhoto reviewPhoto = ReviewPhoto.builder()
-                    .reviewPhotoUrl(reviewPhothourl)
-                    .reviewPhotoKey(reviewPhotoKey)
-                    .review(review)
-                    .build();
-            reviewPhotos.add(reviewPhoto); // 매번 DB에 담지 않고, 우선 List에 담기.
+                ReviewPhoto reviewPhoto = ReviewPhoto.builder()
+                        .reviewPhotoUrl(reviewPhothourl)
+                        .reviewPhotoKey(reviewPhotoKey)
+                        .review(review)
+                        .build();
+                reviewPhotos.add(reviewPhoto); // 매번 DB에 담지 않고, 우선 List에 담기.
+            }
+            // 한 번에 DB에 저장
+            reviewPhotoRepository.saveAll(reviewPhotos);
         }
-        // 한 번에 DB에 저장
-        reviewPhotoRepository.saveAll(reviewPhotos);
-
         cafe.updateRating(getCafeRatingAVG(cafe));
         cafe.updateReviewCount(cafe.getReviews().size());
 
@@ -187,7 +189,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public ReviewUpdateResponse updateReview(ReviewUpdateRequest request){
+    public ReviewUpdateResponse updateReview(ReviewUpdateRequest request, List<MultipartFile> photos){
 
         Review prevReview = reviewRepository.findById(request.getReviewId()).get();
 
@@ -212,23 +214,25 @@ public class ReviewServiceImpl implements ReviewService {
         reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
 
 
+
         // 새로운 리뷰 사진들을 리스트에 담음
         List<ReviewPhoto> reviewPhotos = new ArrayList<>();
-        for (PhotoRequest photoRequest : request.getPhotos()) {
+        if (photos != null) {
+            for (MultipartFile photoRequest : photos) {
 
-            String reviewPhotoKey = s3Manager.generateReviewPhotoKeyName();
-            String reviewPhothourl = s3Manager.uploadFile(reviewPhotoKey, photoRequest.getReviewPhoto());
+                String reviewPhotoKey = s3Manager.generateReviewPhotoKeyName();
+                String reviewPhothourl = s3Manager.uploadFile(reviewPhotoKey, photoRequest);
 
-            ReviewPhoto reviewPhoto = ReviewPhoto.builder()
-                    .reviewPhotoUrl(reviewPhothourl)
-                    .reviewPhotoKey(reviewPhotoKey)
-                    .review(prevReview) // 기존 리뷰 객체를 사용
-                    .build();
-            reviewPhotos.add(reviewPhoto);
+                ReviewPhoto reviewPhoto = ReviewPhoto.builder()
+                        .reviewPhotoUrl(reviewPhothourl)
+                        .reviewPhotoKey(reviewPhotoKey)
+                        .review(prevReview) // 기존 리뷰 객체를 사용
+                        .build();
+                reviewPhotos.add(reviewPhoto);
+            }
+            // 리뷰 사진들을 한 번에 저장
+            reviewPhotoRepository.saveAll(reviewPhotos);
         }
-        // 리뷰 사진들을 한 번에 저장
-        reviewPhotoRepository.saveAll(reviewPhotos);
-
         return new ReviewUpdateResponse(true, prevReview.getId(),"ok");
     }
 

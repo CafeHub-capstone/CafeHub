@@ -22,10 +22,14 @@ import com.cafehub.cafehub.review.repository.ReviewRepository;
 import com.cafehub.cafehub.review.response.BestReviewResponse;
 import com.cafehub.cafehub.reviewPhoto.entity.ReviewPhoto;
 import com.cafehub.cafehub.reviewPhoto.response.PhotoUrlResponse;
+import com.cafehub.cafehub.security.UserDetailsImpl;
+import com.cafehub.cafehub.security.jwt.JwtProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +58,8 @@ public class CafeServiceImpl implements CafeService{
     private final LikeReviewRepository likeReviewRepository;
 
     private final MemberRepository memberRepository;
+
+    private final JwtProvider jwtProvider;
 
 
     // DB connection : 1
@@ -115,6 +121,7 @@ public class CafeServiceImpl implements CafeService{
 
     private Member getLoginMember() {
         String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println(currentMemberEmail);
         return memberRepository.findByEmail(currentMemberEmail).orElse(null);
     }
 
@@ -193,6 +200,13 @@ public class CafeServiceImpl implements CafeService{
                 .build();
 
         return cafeInfoResponseDTO;
+    }
+
+
+    private Member getMemberFromJwt(HttpServletRequest request) {
+        Authentication authentication = jwtProvider.getAuthentication(request.getHeader("Authorization").substring(7));
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        return userDetails.getMember();
     }
 
 }

@@ -17,7 +17,7 @@ public class CommentResponseDTO {
 
     private String commentContent;
 
-    private LocalDateTime commentDate;
+    private String commentDate;
 
     private Boolean commentManagement;
 }

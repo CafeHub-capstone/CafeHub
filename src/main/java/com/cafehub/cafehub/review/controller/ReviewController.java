@@ -1,14 +1,20 @@
 package com.cafehub.cafehub.review.controller;
 
-import com.cafehub.cafehub.review.request.*;
-import com.cafehub.cafehub.review.response.*;
+import com.cafehub.cafehub.review.request.AllReviewGetRequest;
+import com.cafehub.cafehub.review.request.ReviewCreateRequest;
+import com.cafehub.cafehub.review.request.ReviewDeleteRequest;
+import com.cafehub.cafehub.review.request.ReviewUpdateRequest;
+import com.cafehub.cafehub.review.response.AllReviewGetResponse;
+import com.cafehub.cafehub.review.response.ReviewCreateResponse;
+import com.cafehub.cafehub.review.response.ReviewDeleteResponse;
+import com.cafehub.cafehub.review.response.ReviewUpdateResponse;
 import com.cafehub.cafehub.review.service.ReviewService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @Slf4j // 테스트용 로거.
@@ -24,24 +30,28 @@ public class ReviewController {
         return reviewService.getAllReviewOfCafe(new AllReviewGetRequest(cafeId, currentPage));
     }
 
-    // 리뷰 사진이라고 올린 파일이 png, jpg 파일이 맞는지 확인해야 하는데
-    @PostMapping(value = "/api/auth/cafe/{cafeId}/review", consumes = "multipart/form-data")
-    public ReviewCreateResponse createReview(@PathVariable("cafeId") Long cafeId,
-                                             @RequestBody ReviewCreateRequest reviewCreateRequest){
+    @PostMapping(value = "/api/auth/cafe/{cafeId}/review", consumes = {"multipart/form-data"})
+    public ReviewCreateResponse createReview(
+            @PathVariable("cafeId") Long cafeId,
+            @RequestPart("ReviewCreateRequest") ReviewCreateRequest request,
+            @RequestPart(value = "photos", required = false) List<MultipartFile> photos) {
 
-        reviewCreateRequest.setCafeId(cafeId);
+        request.setCafeId(cafeId);
 
-        return reviewService.writeReview(reviewCreateRequest);
+        return reviewService.writeReview(request, photos);
     }
 
+
+
     // 리뷰 수정.
-    @PostMapping(value = "/api/auth/cafe/{reviewId}/update", consumes = "multipart/form-data")
+    @PostMapping(value = "/api/auth/cafe/{reviewId}/update", consumes = {"multipart/form-data"})
     public ReviewUpdateResponse updateReview(@PathVariable("reviewId") Long reviewId,
-                                             @RequestBody ReviewUpdateRequest reviewUpdateRequest){
+                                             @RequestPart("request")  ReviewUpdateRequest reviewUpdateRequest,
+                                             @RequestPart(value = "photos", required = false) List<MultipartFile> photos){
 
         reviewUpdateRequest.setReviewId(reviewId);
 
-        return reviewService.updateReview(reviewUpdateRequest);
+        return reviewService.updateReview(reviewUpdateRequest,photos);
     }
 
     // 리뷰 삭제.

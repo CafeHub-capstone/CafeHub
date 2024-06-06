@@ -40,6 +40,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -195,7 +197,7 @@ public class MyPageService {
                     .commentId(comment.getId())
                     .nickname(comment.getMember().getNickname())
                     .commentContent(comment.getContent())
-                    .commentDate(comment.getCreatedAt())
+                    .commentDate(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
                     .commentManagement(true) //
                     .build();
             responseDtoList.add(responseDto);

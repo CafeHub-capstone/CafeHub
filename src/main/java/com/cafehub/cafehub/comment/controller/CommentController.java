@@ -5,6 +5,7 @@ import com.cafehub.cafehub.comment.request.DeleteCommentRequestDTO;
 import com.cafehub.cafehub.comment.request.GetAllCommentRequestDTO;
 import com.cafehub.cafehub.comment.response.CreateCommentResponseDTO;
 import com.cafehub.cafehub.comment.service.CommentService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +22,11 @@ public class CommentController {
 
     @GetMapping("/reviews/{reviewId}/comments/{currentPage}")
     public ResponseEntity<?> getAllComment(@PathVariable("reviewId") Long reviewId,
-                                        @PathVariable("currentPage") Integer currentPage){
+                                           @PathVariable("currentPage") Integer currentPage, HttpServletRequest request){
 
         GetAllCommentRequestDTO getAllCommentRequestDTO = new GetAllCommentRequestDTO(reviewId, currentPage);
 
-        return ResponseEntity.ok().body(commentService.getAllComment(getAllCommentRequestDTO));
+        return ResponseEntity.ok().body(commentService.getAllComment(getAllCommentRequestDTO, request));
     }
 
     @PostMapping("/auth/reviews/{reviewId}/comment")

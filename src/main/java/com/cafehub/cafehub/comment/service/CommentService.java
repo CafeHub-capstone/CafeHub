@@ -3,14 +3,12 @@ package com.cafehub.cafehub.comment.service;
 import com.cafehub.cafehub.comment.request.CreateCommentRequestDTO;
 import com.cafehub.cafehub.comment.request.DeleteCommentRequestDTO;
 import com.cafehub.cafehub.comment.request.GetAllCommentRequestDTO;
-import com.cafehub.cafehub.comment.response.CreateCommentResponseDTO;
-import com.cafehub.cafehub.comment.response.DeleteCommentResponseDTO;
 import com.cafehub.cafehub.common.dto.ResponseDto;
-import org.springframework.transaction.annotation.Transactional;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface CommentService {
 
-    ResponseDto<?> getAllComment(GetAllCommentRequestDTO getAllCommentRequestDTO);
+    ResponseDto<?> getAllComment(GetAllCommentRequestDTO getAllCommentRequestDTO, HttpServletRequest request);
 
     ResponseDto<?> createComment(CreateCommentRequestDTO createCommentRequestDTO);
 

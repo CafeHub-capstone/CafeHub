@@ -12,20 +12,21 @@ import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.member.repository.MemberRepository;
 import com.cafehub.cafehub.review.entity.Review;
 import com.cafehub.cafehub.review.repository.ReviewRepository;
+import com.cafehub.cafehub.security.UserDetailsImpl;
+import com.cafehub.cafehub.security.jwt.JwtProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CommentServiceImpl implements CommentService{
 
-    private static final int COMMENT_PAGING_SIZE = 4;
+    private static final int COMMENT_PAGING_SIZE = 10;
 
     private final MemberRepository memberRepository;
 
@@ -41,27 +42,48 @@ public class CommentServiceImpl implements CommentService{
 
     private final CommentRepository commentRepository;
 
+    private final JwtProvider jwtProvider;
+
     @Override
-    public ResponseDto<?> getAllComment(GetAllCommentRequestDTO request) {
+    public ResponseDto<?> getAllComment(GetAllCommentRequestDTO request, HttpServletRequest httpServletRequest) {
+
+//        Member loginMember = getMemberFromJwt(httpServletRequest);
+
 
         String currentMemberEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Member loginMember = memberRepository.findByEmail(currentMemberEmail).orElse(null);
 
-        // 날짜 포맷터 설정
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         // 슬라이스 처리를 위해 슬라이스 생성.
         Slice<Comment> commentSlice = commentRepository.findAllByReviewIdWithMember(request.getReviewId(),
                 PageRequest.of(request.getCurrentPage(), COMMENT_PAGING_SIZE, Sort.by(Sort.Direction.DESC, "createdAt")));
 
-        List<CommentResponseDTO> comments = commentSlice.getContent().stream().map(comment -> {
-            return CommentResponseDTO.builder()
-                    .commentId(comment.getId())
-                    .nickname(comment.getMember().getNickname())
-                    .commentContent(comment.getContent())
-                    .commentDate(LocalDateTime.parse(comment.getCreatedAt().format(formatter)))
-                    .commentManagement(comment.getMember().getEmail().equals(currentMemberEmail))
-                    .build();
-        }).collect(Collectors.toList());
+        List<CommentResponseDTO> comments;
+
+        if (loginMember ==null){
+
+            comments = commentSlice.getContent().stream().map(comment -> {
+                return CommentResponseDTO.builder()
+                        .commentId(comment.getId())
+                        .nickname(comment.getMember().getNickname())
+                        .commentContent(comment.getContent())
+                        .commentDate(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
+                        .commentManagement(false)
+                        .build();
+            }).toList();
+        }
+        else {
+            comments = commentSlice.getContent().stream().map(comment -> {
+                return CommentResponseDTO.builder()
+                        .commentId(comment.getId())
+                        .nickname(comment.getMember().getNickname())
+                        .commentContent(comment.getContent())
+                        .commentDate(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
+                        .commentManagement(comment.getMember().equals(loginMember))     // 성능 개선 필요
+                        .build();
+            }).toList();
+        }
+
 
         GetAllCommentResponseDTO response = new GetAllCommentResponseDTO(comments, commentSlice.isLast(), commentSlice.getNumber());
 
@@ -113,4 +135,10 @@ public class CommentServiceImpl implements CommentService{
     }
 
 
+
+    private Member getMemberFromJwt(HttpServletRequest request) {
+        Authentication authentication = jwtProvider.getAuthentication(request.getHeader("Authorization").substring(7));
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        return userDetails.getMember();
+    }
 }
