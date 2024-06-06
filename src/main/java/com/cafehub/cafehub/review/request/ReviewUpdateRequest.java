@@ -19,7 +19,5 @@ public class ReviewUpdateRequest {
 
     private Integer reviewRating;
 
-    private List<MultipartFile> photos;
-
     private String reviewContent;
 }

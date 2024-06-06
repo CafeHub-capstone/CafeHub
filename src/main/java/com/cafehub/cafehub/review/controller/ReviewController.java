@@ -46,7 +46,7 @@ public class ReviewController {
     // 리뷰 수정.
     @PostMapping(value = "/api/auth/cafe/{reviewId}/update", consumes = {"multipart/form-data"})
     public ReviewUpdateResponse updateReview(@PathVariable("reviewId") Long reviewId,
-                                             @RequestPart("request")  ReviewUpdateRequest reviewUpdateRequest,
+                                             @RequestPart("ReviewUpdateRequest")  ReviewUpdateRequest reviewUpdateRequest,
                                              @RequestPart(value = "photos", required = false) List<MultipartFile> photos){
 
         reviewUpdateRequest.setReviewId(reviewId);

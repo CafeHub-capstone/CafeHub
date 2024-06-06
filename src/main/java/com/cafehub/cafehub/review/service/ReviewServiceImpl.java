@@ -208,14 +208,18 @@ public class ReviewServiceImpl implements ReviewService {
 
         // S3는 DB IN 처럼 한번에 업로드 하는 방법이 없는거 같음
         List<ReviewPhoto> reviewPhotoList = reviewPhotoRepository.findAllByReviewId(request.getReviewId());
-        for(ReviewPhoto reviewPhoto : reviewPhotoList){
-            s3Manager.deleteFile(reviewPhoto.getReviewPhotoKey());
-        }
-        reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
 
+        if (!reviewPhotoList.isEmpty()) {
+            for (ReviewPhoto reviewPhoto : reviewPhotoList) {
+                s3Manager.deleteFile(reviewPhoto.getReviewPhotoKey());
+            }
+            reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
+        }
 
 
         // 새로운 리뷰 사진들을 리스트에 담음
+
+
         List<ReviewPhoto> reviewPhotos = new ArrayList<>();
         if (photos != null) {
             for (MultipartFile photoRequest : photos) {
