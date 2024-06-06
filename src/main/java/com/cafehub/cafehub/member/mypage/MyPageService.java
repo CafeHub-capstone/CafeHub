@@ -1,12 +1,8 @@
 package com.cafehub.cafehub.member.mypage;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.cafehub.cafehub.comment.entity.Comment;
 import com.cafehub.cafehub.comment.repository.CommentRepository;
 import com.cafehub.cafehub.comment.response.CommentResponseDTO;
-import com.cafehub.cafehub.common.ErrorCode;
 import com.cafehub.cafehub.common.dto.ResponseDto;
 import com.cafehub.cafehub.likeReview.repository.LikeReviewRepository;
 import com.cafehub.cafehub.member.entity.Member;
@@ -14,8 +10,6 @@ import com.cafehub.cafehub.member.mypage.dto.ProfileCommentsResponseDto;
 import com.cafehub.cafehub.member.mypage.dto.ProfileRequestDto;
 import com.cafehub.cafehub.member.mypage.dto.ProfileResponseDto;
 import com.cafehub.cafehub.member.mypage.dto.ProfileReviewsResponseDto;
-import com.cafehub.cafehub.member.mypage.exception.FailedChangeProfile;
-import com.cafehub.cafehub.member.repository.MemberRepository;
 import com.cafehub.cafehub.review.entity.Review;
 import com.cafehub.cafehub.review.repository.ReviewRepository;
 import com.cafehub.cafehub.review.response.ReviewResponse;
@@ -25,11 +19,9 @@ import com.cafehub.cafehub.reviewPhoto.response.PhotoUrlResponse;
 import com.cafehub.cafehub.s3.S3Manager;
 import com.cafehub.cafehub.security.UserDetailsImpl;
 import com.cafehub.cafehub.security.jwt.JwtProvider;
-import com.cafehub.cafehub.security.jwt.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -37,10 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -106,22 +94,26 @@ public class MyPageService {
         return ResponseDto.success(profileCommentsResponseDto);
     }
 
-    public ResponseDto<?> changeMyProfile(HttpServletRequest request, ProfileRequestDto requestDto) {
+    public ResponseDto<?> changeMyProfile(HttpServletRequest request, ProfileRequestDto requestDto, MultipartFile photo) {
         Member member = getMemberFromJwt(request);
         String nickname = requestDto.getNickname();
-        MultipartFile profileImg = requestDto.getProfileImg();
+
 
         if (nickname != null) {
             member.updateNickname(nickname);
         }
-        if (profileImg != null) {
+        if (photo != null) {
 //                String userPhotoUrl = uploadS3(profileImg, member);
 //                member.updateProfileImg(userPhotoUrl);
 
-            s3Manager.deleteFile(member.getUserPhotoKey());
+            String photoKey = member.getUserPhotoKey();
+            System.out.println(photoKey);
+            if(photoKey!=null) {
+                s3Manager.deleteFile(photoKey);
+            }
 
             String userPhotoKey = s3Manager.generateProfilePhotoKeyName();
-            String userPhotoUrl = s3Manager.uploadFile(userPhotoKey,profileImg);
+            String userPhotoUrl = s3Manager.uploadFile(userPhotoKey,photo);
 
             member.updateProfileImg(userPhotoUrl,userPhotoKey);
 //        try {

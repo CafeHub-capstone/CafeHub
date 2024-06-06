@@ -248,11 +248,13 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 리뷰 사진 삭제 - cascade가 아니므로 직접 해줘야 함.
         List<ReviewPhoto> reviewPhotoList = reviewPhotoRepository.findAllByReviewId(request.getReviewId());
-        for(ReviewPhoto reviewPhoto : reviewPhotoList){
-            s3Manager.deleteFile(reviewPhoto.getReviewPhotoKey());
-        }
 
-        reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
+        if(reviewPhotoList!=null || !reviewPhotoList.isEmpty()) {
+            for (ReviewPhoto reviewPhoto : reviewPhotoList) {
+                s3Manager.deleteFile(reviewPhoto.getReviewPhotoKey());
+            }
+            reviewPhotoRepository.deleteAllByReviewId(request.getReviewId());
+        }
 
         // 리뷰 삭제.
         reviewRepository.delete(review);

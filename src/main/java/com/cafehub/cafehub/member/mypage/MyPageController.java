@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @ControllerAdvice
@@ -36,9 +37,12 @@ public class MyPageController {
         return ResponseEntity.ok().body(myPageService.getMyComments(pageable, request));
     }
 
-    @PostMapping(value = "/api/auth/mypage", consumes = "multipart/form-data")
-    public ResponseEntity<?> changeProfile(HttpServletRequest request, @ModelAttribute @Validated ProfileRequestDto profileRequestDto) {
-        return ResponseEntity.ok().body(myPageService.changeMyProfile(request, profileRequestDto));
+    @PostMapping(value = "/api/auth/mypage", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> changeProfile(HttpServletRequest request,
+                                           @RequestPart ("nickname") ProfileRequestDto profileRequestDto,
+                                           @RequestPart ("profileImg") MultipartFile photo) {
+
+        return ResponseEntity.ok().body(myPageService.changeMyProfile(request, profileRequestDto,photo));
     }
 
     @ExceptionHandler({SizeLimitExceededException.class, MaxUploadSizeExceededException.class})
