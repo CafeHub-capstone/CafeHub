@@ -4,6 +4,7 @@ import com.cafehub.cafehub.cafe.entity.Cafe;
 import com.cafehub.cafehub.cafe.repository.CafeRepository;
 import com.cafehub.cafehub.comment.entity.Comment;
 import com.cafehub.cafehub.comment.repository.CommentRepository;
+import com.cafehub.cafehub.likeReview.entity.LikeReview;
 import com.cafehub.cafehub.likeReview.repository.LikeReviewRepository;
 import com.cafehub.cafehub.member.entity.Member;
 import com.cafehub.cafehub.member.repository.MemberRepository;
@@ -262,12 +263,18 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 리뷰의 댓글 삭제
 
-        List<Comment> reviewCommentList = commentRepository.findAllByReviewId(request.getReviewId());
+//        List<Comment> reviewCommentList = commentRepository.findAllByReviewId(request.getReviewId());
 
 
-        if (reviewCommentList != null) {
+//        if (reviewCommentList != null) {
             commentRepository.deleteAllByReviewId(request.getReviewId());
-        }
+//        }
+
+//        List<LikeReview> likeReviewList = likeReviewRepository.finAllByReviewId(request.getReviewId());
+
+//        if(likeReviewList != null){
+            likeReviewRepository.deleteAllByReviewId(request.getReviewId());
+//        }
 
 
         // 리뷰 삭제.
