@@ -119,7 +119,7 @@ public class KaKaoMemberService {
         Member kakaoMember = memberRepository.findByEmail(kaKaoEmail).orElse(null);
 
         if (kakaoMember == null) {
-            String nickname = kaKaoMemberInfo.getNickname() + UUID.randomUUID();
+            String nickname = kaKaoMemberInfo.getNickname() + UUID.randomUUID().toString().substring(0,5);
             kakaoMember = new Member(kaKaoEmail, nickname);
             memberRepository.save(kakaoMember);
         }
